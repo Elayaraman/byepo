@@ -13,3 +13,20 @@ Organisation Admin for org admins to manage feature flags.
 End user panel.
 - no need for login in this scope
 - there will be a form with input when submit will be notified as is it enabled for the org.
+
+Entities we need :
+Org 
+Users
+
+Org :{
+    id,
+    name,
+    inviteCode,
+}
+
+Users:{
+    id,
+    org_id,
+    role,
+    email,
+}
