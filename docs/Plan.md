@@ -68,5 +68,6 @@ User flow is Super admin can create organisation along with a invitecode. org ad
 Stack:
 monorepo structure (no tools)
 react for all FE applications 
+    tailwind for styling
 express for BE for simpler setup
 SQLite for DB file based.
