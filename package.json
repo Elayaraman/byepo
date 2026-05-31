@@ -1,0 +1,27 @@
+{
+  "name": "byepo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Elayaraman/byepo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Elayaraman/byepo/issues"
+  },
+  "homepage": "https://github.com/Elayaraman/byepo#readme",
+  "dependencies": {
+    "concurrently": "^10.0.0"
+  }
+}

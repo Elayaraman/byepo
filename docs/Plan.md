@@ -59,3 +59,9 @@ END USER:  /org_id
      - GET: /flag/check/:id
 
 User flow is Super admin can create organisation along with a invitecode. org admin can use the invitecode to singup as admin. after the code used it'll be rotated. 
+
+Stack:
+monorepo structure (no tools)
+react for all FE applications 
+express for BE for simpler setup
+SQLite for DB file based.
