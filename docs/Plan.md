@@ -21,8 +21,7 @@ Users
 org :{
     id,
     name,
-    inviteCode,
-    code_used,
+    inviteCode
 }
 
 users:{
@@ -30,7 +29,7 @@ users:{
     org_id,
     role,
     email,
-    password
+    password_hash
 }
 
 feature_flafs:{
@@ -41,7 +40,6 @@ feature_flafs:{
 }
 
 APIS:
-
 PREFIX : /_api/
 SUPER ADMIN: 
     - POST: /org/create
@@ -50,8 +48,8 @@ SUPER ADMIN:
     - GET: /org and /org/:idd
 
 ORG ADMIN:  /org_id
-    - POST: /signup {inviteCode}
-    - POST: /login
+    - POST: /auth/signup {inviteCode}
+    - POST: /auth/login
     - POST: /flag/create
     - PUT: /flag/update=id
     - DELETE: /flag/delete?=id
@@ -59,3 +57,5 @@ ORG ADMIN:  /org_id
 
 END USER:  /org_id
      - GET: /flag/check/:id
+
+User flow is Super admin can create organisation along with a invitecode. org admin can use the invitecode to singup as admin. after the code used it'll be rotated. 
