@@ -18,14 +18,15 @@ await db.exec(`
     inviteCode TEXT NOT NULL
   );
   
-  CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    org_id INTEGER NOT NULL,
-    email TEXT NOT NULL UNIQUE,
+    org_id INTEGER,
+    email TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL,
-    FOREIGN KEY (org_id) REFERENCES org(id)
-  );
+    FOREIGN KEY (org_id) REFERENCES org(id),
+    UNIQUE(org_id, email)
+);
 `)
 
 app.get('/', (req, res) => {
