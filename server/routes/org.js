@@ -55,4 +55,13 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+router.delete('/:id', async (req, res) => {
+    try {
+        await orgRepo.deleteOrg(req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+    }
+});
+
 export default router;
