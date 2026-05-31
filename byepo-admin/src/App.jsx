@@ -24,6 +24,8 @@ function App() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [orgList, setOrgList] = useState([]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -59,68 +61,102 @@ function App() {
     setToken(null);
   };
 
-  if (token) {
+  useEffect(() => {
+    if (!token) return;
+
+    fetch('http://localhost:3000/_api/org', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setOrgList(data.data);
+        }
+      });
+
+  }, [token])
+
+  if (!token) {
     return (
       <div className="flex min-h-screen justify-center items-center">
         <div className="p-8 font-sans max-w-md w-full border border-gray-300">
-          <h2 className="text-xl font-bold mb-4">Super Admin Dashboard</h2>
-          <p className="mb-6">Welcome! You are successfully logged in.</p>
-          <button
-            onClick={handleLogout}
-            className="w-full bg-red-600 text-white p-2 cursor-pointer"
-          >
-            Logout
-          </button>
+          <h2 className="text-xl font-bold mb-4">Super Admin Login</h2>
+
+          {error && (
+            <div className="mb-4 p-2 bg-red-100 text-red-700 border border-red-300 text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block font-bold mb-1">Email</label>
+              <input
+                type="email"
+                className="w-full p-2 border border-gray-300"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold mb-1">Password</label>
+              <input
+                type="password"
+                className="w-full p-2 border border-gray-300"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white p-2 cursor-pointer disabled:opacity-50"
+            >
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen justify-center items-center">
-      <div className="p-8 font-sans max-w-md w-full border border-gray-300">
-        <h2 className="text-xl font-bold mb-4">Super Admin Login</h2>
-
-        {error && (
-          <div className="mb-4 p-2 bg-red-100 text-red-700 border border-red-300 text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-4">
+    <div className="flex min-h-screen items-center flex-col justify-between">
+      <header className='flex justify-between p-4 min-w-full items-center'>
+        <h2 className="text-xl font-bold inline">Super Admin Dashboard</h2>
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 text-white p-4 cursor-pointer"
+        >
+          Logout
+        </button>
+      </header>
+      <div className="p-8 font-sans max-w-md w-full flex flex-1 min-w-full border justify-center border-gray-300">
+        <div className='flex flex-col w-[400px]'>
           <div>
-            <label className="block font-bold mb-1">Email</label>
-            <input
-              type="email"
-              className="w-full p-2 border border-gray-300"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            {orgList.map((org) => (
+              <div key={org.id} className="mb-2 flex w-[420px] justify-between items-center">
+                <div>
+                  <p className="text-sm"><strong>Name:</strong> {org.name}</p>
+                  <p className="text-sm"><strong>Invite Code:</strong> {org.inviteCode}</p>
+                </div>
+                <button className='btn border-1 px-4 py-2 rounded-sm cursor-pointer bg-red-300 text-white hover:bg-red-500 ' type="button">
+                  Delete
+                </button>
+              </div>
+            ))}
           </div>
-
-          <div>
-            <label className="block font-bold mb-1">Password</label>
-            <input
-              type="password"
-              className="w-full p-2 border border-gray-300"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white p-2 cursor-pointer disabled:opacity-50"
-          >
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   );
 }
+
 
 export default App;
