@@ -32,31 +32,36 @@ users:{
     password_hash
 }
 
-feature_flafs:{
+feature_flags:{
     id,
     org_id,
     name,
     enabled,
 }
 
-APIS:
-PREFIX : /_api/
-SUPER ADMIN: 
-    - POST: /org/create
-    - PUT: /org/update/:id
-    - DELETE: /org/delete/:id
-    - GET: /org and /org/:idd
+Routes:
 
-ORG ADMIN:  /org_id
-    - POST: /auth/signup {inviteCode}
-    - POST: /auth/login
-    - POST: /flag/create
-    - PUT: /flag/update=id
-    - DELETE: /flag/delete?=id
-    - GET: /flag and /flag?=id
+ORG:
+    POST /_api/org
+    PUT /_api/org/:id
+    DELETE /_api/org/:id
+    GET /_api/org
+    GET /_api/org/:id
 
-END USER:  /org_id
-     - GET: /flag/check/:id
+flags:
+
+    POST /_api/flag
+    PUT /_api/flag/:id
+    DELETE /_api/flag/:id
+    GET /_api/flag
+    GET /_api/flag/:id
+    GET /_api/flag/check/:id
+
+auth:
+
+    POST /_api/auth/signup
+    POST /_api/auth/login
+
 
 User flow is Super admin can create organisation along with a invitecode. org admin can use the invitecode to singup as admin. after the code used it'll be rotated. 
 
