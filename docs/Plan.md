@@ -18,15 +18,44 @@ Entities we need :
 Org 
 Users
 
-Org :{
+org :{
     id,
     name,
     inviteCode,
+    isActivated,
 }
 
-Users:{
+users:{
     id,
     org_id,
     role,
     email,
+    password
 }
+
+feature_flafs:{
+    id,
+    org_id,
+    name,
+    enabled,
+}
+
+APIS:
+
+PREFIX : /_api/
+SUPER ADMIN: 
+    - POST: /org/create
+    - PUT: /org/update?=?=id
+    - DELETE: /org/delete?=id
+    - GET: /org and /org?=id
+
+ORG ADMIN:  /org_id
+    - POST: /signup
+    - POST: /login
+    - POST: /flag/create
+    - PUT: /flag/update=id
+    - DELETE: /flag/delete?=id
+    - GET: /flag and /flag?=id
+
+END USER:  /org_id
+     - GET: /flag and /flag?=id
