@@ -4,8 +4,6 @@ import authMiddleware, { orgAdminOnly } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// End-user endpoint to check if a flag is enabled.
-// This does not require authentication, but requires org_id and name.
 router.get('/check', async (req, res) => {
     const { org_id, name } = req.query;
     if (!org_id || !name) {
@@ -15,7 +13,6 @@ router.get('/check', async (req, res) => {
     res.json({ success: true, enabled });
 });
 
-// Protect all following administrative routes with auth and orgAdmin role.
 router.use(authMiddleware, orgAdminOnly);
 
 router.post('/', async (req, res) => {
@@ -62,7 +59,7 @@ router.put('/:id', async (req, res) => {
     try {
         const org_id = req.user.org_id;
         const { name, enabled } = req.body;
-        
+
         const existing = await flagRepo.findFlagByIdAndOrgId(req.params.id, org_id);
         if (!existing) {
             return res.status(404).json({ success: false, error: 'Feature flag not found' });
@@ -71,7 +68,7 @@ router.put('/:id', async (req, res) => {
         const flag = await flagRepo.updateFlag(req.params.id, org_id, { name: name || existing.name, enabled: enabled !== undefined ? enabled : existing.enabled });
         res.json({ success: true, data: flag });
     } catch (error) {
-         if (error.message && error.message.includes('UNIQUE constraint failed: feature_flags.org_id, feature_flags.name')) {
+        if (error.message && error.message.includes('UNIQUE constraint failed: feature_flags.org_id, feature_flags.name')) {
             return res.status(400).json({ success: false, error: 'Feature flag name already exists for this organization' });
         }
         res.status(500).json({ success: false, error: error.message || 'Internal server error' });

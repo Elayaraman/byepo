@@ -7,22 +7,40 @@ const router = express.Router();
 router.use(authMiddleware, superAdminOnly)
 
 router.post('/', async (req, res) => {
-    const { name } = req.body;
-    const org = await orgRepo.createOrg({ name });
-    res.json({ success: true, data: org });
+    try {
+        const { name } = req.body;
+        if (!name) {
+            return res.status(400).json({ success: false, error: 'Organization name is required' });
+        }
+        const org = await orgRepo.createOrg({ name });
+        res.json({ success: true, data: org });
+    } catch (error) {
+        if (error.message && error.message.includes('UNIQUE constraint failed: org.name')) {
+            return res.status(400).json({ success: false, error: 'Organization name already exists' });
+        }
+        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+    }
 });
 
 router.get('/', async (req, res) => {
-    const orgs = await orgRepo.findAllOrgs();
-    res.json({ success: true, data: orgs });
+    try {
+        const orgs = await orgRepo.findAllOrgs();
+        res.json({ success: true, data: orgs });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+    }
 });
 
 router.get('/:id', async (req, res) => {
-    const org = await orgRepo.findOrgById(req.params.id);
-    if (!org) {
-        return res.status(404).json({ success: false, error: 'Org not found' });
+    try {
+        const org = await orgRepo.findOrgById(req.params.id);
+        if (!org) {
+            return res.status(404).json({ success: false, error: 'Org not found' });
+        }
+        res.json({ success: true, data: org });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
     }
-    res.json({ success: true, data: org });
 });
 
 export default router;
