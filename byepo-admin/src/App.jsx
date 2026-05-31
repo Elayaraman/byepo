@@ -78,6 +78,25 @@ function App() {
 
   }, [token])
 
+  async function handleDelete(orgId) {
+    if (window.confirm("Are you sure you want to delete this organization?")) {
+      try {
+        const res = await fetch(`http://localhost:3000/_api/org/${orgId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setOrgList(orgList.filter(org => org.id !== orgId));
+        } else {
+          alert('Failed to delete organization');
+        }
+      } catch (err) {
+        alert('Error connecting to server to delete organization');
+      }
+    }
+  }
+
   if (!token) {
     return (
       <div className="flex min-h-screen justify-center items-center">
@@ -126,13 +145,14 @@ function App() {
     );
   }
 
+
   return (
     <div className="flex min-h-screen items-center flex-col justify-between">
       <header className='flex justify-between p-4 min-w-full items-center'>
         <h2 className="text-xl font-bold inline">Super Admin Dashboard</h2>
         <button
           onClick={handleLogout}
-          className="bg-red-600 text-white p-4 cursor-pointer"
+          className="bg-red-600 text-white px-4 py-2 cursor-pointer rounded-sm"
         >
           Logout
         </button>
@@ -146,7 +166,7 @@ function App() {
                   <p className="text-sm"><strong>Name:</strong> {org.name}</p>
                   <p className="text-sm"><strong>Invite Code:</strong> {org.inviteCode}</p>
                 </div>
-                <button className='btn border-1 px-4 py-2 rounded-sm cursor-pointer bg-red-300 text-white hover:bg-red-500 ' type="button">
+                <button onClick={() => handleDelete(org.id)} className='btn border-1 px-4 py-2 rounded-sm cursor-pointer bg-red-300 text-white hover:bg-red-500 ' type="button">
                   Delete
                 </button>
               </div>
