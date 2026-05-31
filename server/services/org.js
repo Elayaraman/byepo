@@ -35,6 +35,12 @@ export async function updateOrg(id, { name }) {
   return findOrgById(id);
 }
 
+export async function rotateOrgInviteCode(id) {
+  const newCode = generateInviteCode();
+  await db.run('UPDATE org SET inviteCode = ? WHERE id = ?', [newCode, id]);
+  return findOrgById(id);
+}
+
 export async function deleteOrg(id) {
   return db.run('DELETE FROM org WHERE id = ?', [id]);
 }

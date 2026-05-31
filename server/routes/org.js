@@ -64,4 +64,16 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+router.post('/:id/rotate-code', async (req, res) => {
+    try {
+        const org = await orgRepo.rotateOrgInviteCode(req.params.id);
+        if (!org) {
+            return res.status(404).json({ success: false, error: 'Org not found' });
+        }
+        res.json({ success: true, data: org });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+    }
+});
+
 export default router;
