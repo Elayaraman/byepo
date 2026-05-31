@@ -69,7 +69,7 @@ export default function App() {
                             onChange={(e) => setInputOrgName(e.target.value)}
                             required
                         />
-                        <button type="submit" className="w-full bg-blue-600 text-white p-2">
+                        <button type="submit" className="w-full bg-blue-600 text-white p-2 cursor-pointer">
                             Continue
                         </button>
                     </form>
@@ -89,7 +89,7 @@ export default function App() {
                             window.history.pushState(null, '', '/');
                             setOrgName('');
                         }}
-                        className="text-blue-600 underline"
+                        className="text-blue-600 underline cursor-pointer"
                     >
                         Try another organization
                     </button>
@@ -122,7 +122,7 @@ export default function App() {
                                 />
                             </div>
 
-                            <button type="submit" className="w-full bg-blue-600 text-white p-2">
+                            <button type="submit" className="w-full bg-blue-600 text-white p-2 cursor-pointer">
                                 Check Status
                             </button>
 
