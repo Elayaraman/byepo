@@ -1,15 +1,16 @@
 import express from 'express';
 import * as orgRepo from '../services/org.js';
-import authMiddleware from '../middleware/auth.js';
+import authMiddleware, { superAdminOnly } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.post('/', authMiddleware
-    , async (req, res) => {
-        const { name } = req.body;
-        const org = await orgRepo.createOrg({ name });
-        res.json({ success: true, data: org });
-    });
+router.use(authMiddleware, superAdminOnly)
+
+router.post('/', async (req, res) => {
+    const { name } = req.body;
+    const org = await orgRepo.createOrg({ name });
+    res.json({ success: true, data: org });
+});
 
 router.get('/', async (req, res) => {
     const orgs = await orgRepo.findAllOrgs();
