@@ -1,6 +1,16 @@
 import db from './db.js';
 
-export async function createOrg({ name, inviteCode }) {
+function generateInviteCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 8; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+export async function createOrg({ name }) {
+  const inviteCode = generateInviteCode();
   const result = await db.run(
     'INSERT INTO org (name, inviteCode) VALUES (?, ?)',
     [name, inviteCode]
