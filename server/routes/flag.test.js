@@ -31,6 +31,7 @@ test.describe('Flag Routes', () => {
   const orgAdminToken2 = generateToken({ id: 3, email: 'org2@byepo.com', role: 'org_admin', org_id: 2 });
   
   let createdFlagId;
+  const flagName = 'feature_' + Date.now();
 
   test('POST / - returns 403 if user is not org_admin', async () => {
     const res = await fetch(baseUrl, {
@@ -39,7 +40,7 @@ test.describe('Flag Routes', () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${superAdminToken}`
       },
-      body: JSON.stringify({ name: 'feature_a', enabled: true }),
+      body: JSON.stringify({ name: flagName, enabled: true }),
     });
     assert.strictEqual(res.status, 403);
   });
@@ -51,12 +52,12 @@ test.describe('Flag Routes', () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${orgAdminToken1}`
       },
-      body: JSON.stringify({ name: 'feature_a', enabled: true }),
+      body: JSON.stringify({ name: flagName, enabled: true }),
     });
     assert.strictEqual(res.status, 200);
     const data = await res.json();
     assert.strictEqual(data.success, true);
-    assert.strictEqual(data.data.name, 'feature_a');
+    assert.strictEqual(data.data.name, flagName);
     assert.strictEqual(data.data.enabled, true);
     createdFlagId = data.data.id;
   });
@@ -76,7 +77,7 @@ test.describe('Flag Routes', () => {
   });
 
   test('GET /check - returns flag status correctly for end user', async () => {
-    const res = await fetch(`${baseUrl}/check?org_id=1&name=feature_a`, {
+    const res = await fetch(`${baseUrl}/check?org_id=1&name=${flagName}`, {
       method: 'GET'
     });
     assert.strictEqual(res.status, 200);
