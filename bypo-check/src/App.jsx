@@ -4,7 +4,6 @@ export default function App() {
     const [orgName, setOrgName] = useState(window.location.pathname.split('/')[1] || '');
     const [inputOrgName, setInputOrgName] = useState('');
 
-    const [orgId, setOrgId] = useState(null);
     const [flagKey, setFlagKey] = useState('');
     const [status, setStatus] = useState('loading'); // waiting_for_org, loading, valid, invalid
     const [checkResult, setCheckResult] = useState(null);
@@ -20,7 +19,6 @@ export default function App() {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    setOrgId(data.data.id);
                     setStatus('valid');
                 } else {
                     setStatus('invalid');
@@ -42,7 +40,7 @@ export default function App() {
         e.preventDefault();
         setCheckResult(null);
         try {
-            const res = await fetch(`http://localhost:3000/_api/flag/check?org_id=${orgId}&name=${flagKey}`);
+            const res = await fetch(`http://localhost:3000/_api/flag/check?org_name=${orgName}&name=${flagKey}`);
             const data = await res.json();
             if (data.success) {
                 setCheckResult(data.enabled ? 'Enabled' : 'Disabled');

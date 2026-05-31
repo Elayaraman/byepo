@@ -10,7 +10,7 @@ router.get('/public/:name', async (req, res) => {
         if (!org) {
             return res.status(404).json({ success: false, error: 'Org not found' });
         }
-        res.json({ success: true, data: { id: org.id, name: org.name } });
+        res.json({ success: true, data: { name: org.name } });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message || 'Internal server error' });
     }

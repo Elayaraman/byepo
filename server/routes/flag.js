@@ -1,15 +1,20 @@
 import express from 'express';
 import * as flagRepo from '../services/flag.js';
 import authMiddleware, { orgAdminOnly } from '../middleware/auth.js';
+import * as orgRepo from '../services/org.js';
 
 const router = express.Router();
 
 router.get('/check', async (req, res) => {
-    const { org_id, name } = req.query;
-    if (!org_id || !name) {
-        return res.status(400).json({ success: false, error: 'org_id and name are required' });
+    const { org_name, name } = req.query;
+    if (!org_name || !name) {
+        return res.status(400).json({ success: false, error: 'org_name and name are required' });
     }
-    const enabled = await flagRepo.checkFlag(Number(org_id), name);
+    const org = await orgRepo.findOrgByName(org_name);
+    if (!org) {
+        return res.status(404).json({ success: false, error: 'Org not found' });
+    }
+    const enabled = await flagRepo.checkFlag(org.id, name);
     res.json({ success: true, enabled });
 });
 
