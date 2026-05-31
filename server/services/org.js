@@ -22,6 +22,10 @@ export async function findOrgById(id) {
   return db.get('SELECT * FROM org WHERE id = ?', [id]);
 }
 
+export async function findOrgByName(name) {
+  return db.get('SELECT * FROM org WHERE name = ?', [name]);
+}
+
 export async function findAllOrgs() {
   return db.all('SELECT * FROM org');
 }

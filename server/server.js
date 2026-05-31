@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from 'cors'
 import db from './services/db.js'
 import authRouter from './routes/auth.js'
 import orgRouter from './routes/org.js'
@@ -8,6 +9,7 @@ const app = express()
 const port = 3000
 const PREFIX = '/_api/'
 
+app.use(cors())
 app.use(express.json())
 app.use(`${PREFIX}auth`, authRouter)
 app.use(`${PREFIX}org`, orgRouter)

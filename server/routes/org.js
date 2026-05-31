@@ -4,6 +4,18 @@ import authMiddleware, { superAdminOnly } from '../middleware/auth.js';
 
 const router = express.Router();
 
+router.get('/public/:name', async (req, res) => {
+    try {
+        const org = await orgRepo.findOrgByName(req.params.name);
+        if (!org) {
+            return res.status(404).json({ success: false, error: 'Org not found' });
+        }
+        res.json({ success: true, data: { id: org.id, name: org.name } });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+    }
+});
+
 router.use(authMiddleware, superAdminOnly)
 
 router.post('/', async (req, res) => {
