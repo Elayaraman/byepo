@@ -22,7 +22,7 @@ org :{
     id,
     name,
     inviteCode,
-    isActivated,
+    code_used,
 }
 
 users:{
@@ -45,12 +45,12 @@ APIS:
 PREFIX : /_api/
 SUPER ADMIN: 
     - POST: /org/create
-    - PUT: /org/update?=?=id
-    - DELETE: /org/delete?=id
-    - GET: /org and /org?=id
+    - PUT: /org/update/:id
+    - DELETE: /org/delete/:id
+    - GET: /org and /org/:idd
 
 ORG ADMIN:  /org_id
-    - POST: /signup
+    - POST: /signup {inviteCode}
     - POST: /login
     - POST: /flag/create
     - PUT: /flag/update=id
@@ -58,4 +58,4 @@ ORG ADMIN:  /org_id
     - GET: /flag and /flag?=id
 
 END USER:  /org_id
-     - GET: /flag and /flag?=id
+     - GET: /flag/check/:id
