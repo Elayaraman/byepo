@@ -8,4 +8,6 @@ const db = await open({
   driver: sqlite3.Database,
 });
 
+await db.get("PRAGMA foreign_keys = ON;");
+
 export default db;

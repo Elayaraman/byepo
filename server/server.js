@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL,
-    FOREIGN KEY (org_id) REFERENCES org(id),
+    FOREIGN KEY (org_id) REFERENCES org(id) ON DELETE CASCADE,
     UNIQUE(org_id, email)
 );
 
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS feature_flags (
     org_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT 0,
-    FOREIGN KEY (org_id) REFERENCES org(id),
+    FOREIGN KEY (org_id) REFERENCES org(id) ON DELETE CASCADE,
     UNIQUE(org_id, name)
   );
 `)

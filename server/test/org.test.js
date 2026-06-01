@@ -352,6 +352,84 @@ test.describe('Organization Routes', () => {
     });
     assert.strictEqual(res.status, 400);
   });
+  test('DELETE /:id - cascades deletion to users and feature_flags', async () => {
+    const name = `CascadeOrg_${Date.now()}`;
+    const createRes = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${superAdminToken}`,
+      },
+      body: JSON.stringify({ name }),
+    });
+    const { data: org } = await createRes.json();
+
+    // Create user and flag directly in DB
+    const userRes = await db.run(
+      "INSERT INTO users (org_id, email, password_hash, role) VALUES (?, ?, ?, ?)",
+      [org.id, `user_${Date.now()}@cascade.com`, 'hash', 'org_admin']
+    );
+    const flagRes = await db.run(
+      "INSERT INTO feature_flags (org_id, name, enabled) VALUES (?, ?, ?)",
+      [org.id, 'cascade_flag', 1]
+    );
+
+    // Delete organization
+    const delRes = await fetch(`${baseUrl}/${org.id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${superAdminToken}` },
+    });
+    assert.strictEqual(delRes.status, 200);
+
+    // Assert cascading delete
+    const dbUser = await db.get("SELECT * FROM users WHERE id = ?", [userRes.lastID]);
+    const dbFlag = await db.get("SELECT * FROM feature_flags WHERE id = ?", [flagRes.lastID]);
+    assert.strictEqual(dbUser, undefined);
+    assert.strictEqual(dbFlag, undefined);
+  });
+
+  test('Auth Middleware - returns 401 if organization has been deleted', async () => {
+    const name = `DeletedOrg_${Date.now()}`;
+    const createRes = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${superAdminToken}`,
+      },
+      body: JSON.stringify({ name }),
+    });
+    const { data: org } = await createRes.json();
+
+    // Signup user under that org
+    const signupRes = await fetch(`${new URL(baseUrl).origin}/_api/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: `admin_${Date.now()}@test.com`,
+        password: 'pass',
+        orgId: org.id,
+        inviteCode: org.inviteCode,
+      }),
+    });
+    const signupData = await signupRes.json();
+    assert.strictEqual(signupRes.status, 200);
+    const token = signupData.token;
+
+    // Delete organization
+    const delRes = await fetch(`${baseUrl}/${org.id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${superAdminToken}` },
+    });
+    assert.strictEqual(delRes.status, 200);
+
+    // Query flags with old token
+    const queryFlagsRes = await fetch(`${new URL(baseUrl).origin}/_api/flag`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    assert.strictEqual(queryFlagsRes.status, 401);
+    const queryFlagsData = await queryFlagsRes.json();
+    assert.strictEqual(queryFlagsData.error, 'Unauthorized: Organization has been deleted');
+  });
 
   test('GET / (Root) - returns Server is running', async () => {
     const rootUrl = new URL(baseUrl).origin;
