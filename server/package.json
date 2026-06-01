@@ -4,7 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "NODE_ENV=test node --test routes/*.test.js",
+    "test": "NODE_ENV=test node --test test/*.test.js",
+    "test:coverage": "NODE_ENV=test node --test --experimental-test-coverage test/*.test.js",
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
