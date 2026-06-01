@@ -120,6 +120,29 @@ test.describe('Organization Routes', () => {
     assert.strictEqual(getResult.data.name, orgName);
   });
 
+  test('GET / - succeeds with cookie-based authorization', async () => {
+    const res = await fetch(baseUrl, {
+      method: 'GET',
+      headers: {
+        'Cookie': `token=${superAdminToken}`
+      },
+    });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.ok(Array.isArray(data.data));
+  });
+
+  test('GET / - fails when cookie is present but token is missing', async () => {
+    const res = await fetch(baseUrl, {
+      method: 'GET',
+      headers: {
+        'Cookie': 'another_cookie=123'
+      },
+    });
+    assert.strictEqual(res.status, 401);
+  });
+
   test('GET /:id - returns 404 if organization does not exist', async () => {
     const res = await fetch(`${baseUrl}/999999`, {
       method: 'GET',
@@ -429,6 +452,22 @@ test.describe('Organization Routes', () => {
     assert.strictEqual(queryFlagsRes.status, 401);
     const queryFlagsData = await queryFlagsRes.json();
     assert.strictEqual(queryFlagsData.error, 'Unauthorized: Organization has been deleted');
+  });
+
+  test('GET /_api/docs - returns Swagger UI HTML', async () => {
+    const docsUrl = `${new URL(baseUrl).origin}/_api/docs/`;
+    const res = await fetch(docsUrl);
+    assert.strictEqual(res.status, 200);
+    const text = await res.text();
+    assert.ok(text.includes('swagger-ui') || text.includes('SwaggerUIBundle'));
+  });
+
+  test('GET /api-docs - returns Swagger UI HTML', async () => {
+    const docsUrl = `${new URL(baseUrl).origin}/api-docs/`;
+    const res = await fetch(docsUrl);
+    assert.strictEqual(res.status, 200);
+    const text = await res.text();
+    assert.ok(text.includes('swagger-ui') || text.includes('SwaggerUIBundle'));
   });
 
   test('GET / (Root) - returns Server is running', async () => {

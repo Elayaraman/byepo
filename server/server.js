@@ -1,5 +1,7 @@
 import express from 'express'
 import cors from 'cors'
+import fs from 'fs'
+import swaggerUi from 'swagger-ui-express'
 import db from './services/db.js'
 import authRouter from './routes/auth.js'
 import orgRouter from './routes/org.js'
@@ -7,12 +9,19 @@ import flagRouter from './routes/flag.js'
 import errorHandler from './middleware/errorHandler.js'
 import { logger } from './services/logger.js'
 
+const swaggerDocument = JSON.parse(
+  fs.readFileSync(new URL('./swagger.json', import.meta.url), 'utf8')
+)
+
 const app = express()
 const port = 3000
 const PREFIX = '/_api/'
 
 app.use(cors())
 app.use(express.json())
+
+app.use('/_api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 // Incoming request logger middleware
 app.use((req, res, next) => {

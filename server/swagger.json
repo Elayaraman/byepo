@@ -1,0 +1,534 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "ByePo Feature Flag System API",
+    "description": "API documentation for the ByePo Feature Flag System, including authentication, organization management, and feature flag management.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/_api",
+      "description": "Local Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "CookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "token"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "org_id": { "type": "integer", "nullable": true },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string", "enum": ["super_admin", "org_admin"] }
+        }
+      },
+      "Organization": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "inviteCode": { "type": "string" }
+        }
+      },
+      "FeatureFlag": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "org_id": { "type": "integer" },
+          "name": { "type": "string" },
+          "enabled": { "type": "boolean" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/signup": {
+      "post": {
+        "summary": "Register a new Org Admin user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" },
+                  "orgId": { "type": "integer" },
+                  "inviteCode": { "type": "string" }
+                },
+                "required": ["email", "password", "orgId", "inviteCode"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "token": { "type": "string" },
+                    "user": { "$ref": "#/components/schemas/User" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid input or invite code" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate a user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" },
+                  "orgId": { "type": "integer", "description": "Required for Org Admins" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "token": { "type": "string" },
+                    "user": { "$ref": "#/components/schemas/User" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Missing inputs" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/org/public/{name}": {
+      "get": {
+        "summary": "Get basic public details of an organization by name",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "name": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Organization not found" }
+        }
+      }
+    },
+    "/org": {
+      "get": {
+        "summary": "List all organizations (Super Admin only)",
+        "security": [{ "BearerAuth": [] }, { "CookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of organizations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Organization" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      },
+      "post": {
+        "summary": "Create a new organization (Super Admin only)",
+        "security": [{ "BearerAuth": [] }, { "CookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" }
+                },
+                "required": ["name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Organization created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "$ref": "#/components/schemas/Organization" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Bad Request" }
+        }
+      }
+    },
+    "/org/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "integer" }
+        }
+      ],
+      "get": {
+        "summary": "Get organization details (Super Admin only)",
+        "security": [{ "BearerAuth": [] }, { "CookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Organization details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "$ref": "#/components/schemas/Organization" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Not Found" }
+        }
+      },
+      "put": {
+        "summary": "Update organization name (Super Admin only)",
+        "security": [{ "BearerAuth": [] }, { "CookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" }
+                },
+                "required": ["name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Organization updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "$ref": "#/components/schemas/Organization" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Not Found" }
+        }
+      },
+      "delete": {
+        "summary": "Delete an organization and cascade delete its users and flags (Super Admin only)",
+        "security": [{ "BearerAuth": [] }, { "CookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Organization deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/org/{id}/rotate-code": {
+      "post": {
+        "summary": "Rotate organization invite code (Super Admin only)",
+        "security": [{ "BearerAuth": [] }, { "CookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invite code rotated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "$ref": "#/components/schemas/Organization" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flag/check": {
+      "get": {
+        "summary": "Check status of a feature flag (Public)",
+        "parameters": [
+          {
+            "name": "org_name",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flag evaluation response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "enabled": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Organization not found" }
+        }
+      }
+    },
+    "/flag": {
+      "get": {
+        "summary": "List all feature flags for user's organization (Org Admin only)",
+        "security": [{ "BearerAuth": [] }, { "CookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of feature flags",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/FeatureFlag" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a feature flag (Org Admin only)",
+        "security": [{ "BearerAuth": [] }, { "CookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "enabled": { "type": "boolean" }
+                },
+                "required": ["name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Feature flag created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "$ref": "#/components/schemas/FeatureFlag" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flag/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "integer" }
+        }
+      ],
+      "get": {
+        "summary": "Get details of a feature flag (Org Admin only)",
+        "security": [{ "BearerAuth": [] }, { "CookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Feature flag details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "$ref": "#/components/schemas/FeatureFlag" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Not Found" }
+        }
+      },
+      "put": {
+        "summary": "Update status or name of a feature flag (Org Admin only)",
+        "security": [{ "BearerAuth": [] }, { "CookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "enabled": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Feature flag updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": { "$ref": "#/components/schemas/FeatureFlag" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Not Found" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a feature flag (Org Admin only)",
+        "security": [{ "BearerAuth": [] }, { "CookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Feature flag deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Not Found" }
+        }
+      }
+    }
+  }
+}
