@@ -1,98 +1,51 @@
 import express from 'express';
 import * as orgRepo from '../dao/org.js';
 import authMiddleware, { superAdminOnly } from '../middleware/auth.js';
+import { validate, NotFoundError } from '../utils/errors.js';
 
 const router = express.Router();
 
 router.get('/public/:name', async (req, res) => {
-    try {
-        const org = await orgRepo.findOrgByName(req.params.name);
-        if (!org) {
-            return res.status(404).json({ success: false, error: 'Org not found' });
-        }
-        res.json({ success: true, data: { id: org.id, name: org.name } });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
-    }
+    const org = await orgRepo.findOrgByName(req.params.name);
+    if (!org) throw new NotFoundError('Org not found');
+    res.json({ success: true, data: { id: org.id, name: org.name } });
 });
 
-router.use(authMiddleware, superAdminOnly)
+router.use(authMiddleware, superAdminOnly);
 
 router.post('/', async (req, res) => {
-    try {
-        const { name } = req.body;
-        if (!name) {
-            return res.status(400).json({ success: false, error: 'Organization name is required' });
-        }
-        const org = await orgRepo.createOrg({ name });
-        res.json({ success: true, data: org });
-    } catch (error) {
-        if (error.message && error.message.includes('UNIQUE constraint failed: org.name')) {
-            return res.status(400).json({ success: false, error: 'Organization name already exists' });
-        }
-        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
-    }
+    validate(req.body, ['name'], 'Organization name is required');
+    const org = await orgRepo.createOrg({ name: req.body.name });
+    res.json({ success: true, data: org });
 });
 
 router.get('/', async (req, res) => {
-    try {
-        const orgs = await orgRepo.findAllOrgs();
-        res.json({ success: true, data: orgs });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
-    }
+    const orgs = await orgRepo.findAllOrgs();
+    res.json({ success: true, data: orgs });
 });
 
 router.get('/:id', async (req, res) => {
-    try {
-        const org = await orgRepo.findOrgById(req.params.id);
-        if (!org) {
-            return res.status(404).json({ success: false, error: 'Org not found' });
-        }
-        res.json({ success: true, data: org });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
-    }
+    const org = await orgRepo.findOrgById(req.params.id);
+    if (!org) throw new NotFoundError('Org not found');
+    res.json({ success: true, data: org });
 });
 
 router.put('/:id', async (req, res) => {
-    try {
-        const { name } = req.body;
-        if (!name) {
-            return res.status(400).json({ success: false, error: 'Organization name is required' });
-        }
-        const org = await orgRepo.updateOrg(req.params.id, { name });
-        if (!org) {
-            return res.status(404).json({ success: false, error: 'Org not found' });
-        }
-        res.json({ success: true, data: org });
-    } catch (error) {
-        if (error.message && error.message.includes('UNIQUE constraint failed: org.name')) {
-            return res.status(400).json({ success: false, error: 'Organization name already exists' });
-        }
-        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
-    }
+    validate(req.body, ['name'], 'Organization name is required');
+    const org = await orgRepo.updateOrg(req.params.id, { name: req.body.name });
+    if (!org) throw new NotFoundError('Org not found');
+    res.json({ success: true, data: org });
 });
 
 router.delete('/:id', async (req, res) => {
-    try {
-        await orgRepo.deleteOrg(req.params.id);
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
-    }
+    await orgRepo.deleteOrg(req.params.id);
+    res.json({ success: true });
 });
 
 router.post('/:id/rotate-code', async (req, res) => {
-    try {
-        const org = await orgRepo.rotateOrgInviteCode(req.params.id);
-        if (!org) {
-            return res.status(404).json({ success: false, error: 'Org not found' });
-        }
-        res.json({ success: true, data: org });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
-    }
+    const org = await orgRepo.rotateOrgInviteCode(req.params.id);
+    if (!org) throw new NotFoundError('Org not found');
+    res.json({ success: true, data: org });
 });
 
 export default router;
