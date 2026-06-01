@@ -1,6 +1,6 @@
 import db from './db.js';
 
-export async function createFlag({ org_id, name, enabled = false }) {
+export async function createFlag({ org_id, name, enabled = true }) {
     const result = await db.run(
         'INSERT INTO feature_flags (org_id, name, enabled) VALUES (?, ?, ?)',
         [org_id, name, enabled ? 1 : 0]
