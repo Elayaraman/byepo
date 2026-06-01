@@ -109,6 +109,10 @@ export default function App() {
     deleteCookie('token');
     setToken(null);
     setFlags([]);
+    setOrgName('');
+    setOrgId(null);
+    setStatus('select');
+    window.history.pushState(null, '', '/');
   };
 
   useEffect(() => {
@@ -122,7 +126,13 @@ export default function App() {
         'Authorization': `Bearer ${token}`
       }
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.status === 401) {
+          handleLogout();
+          throw new Error('Unauthorized');
+        }
+        return res.json();
+      })
       .then((data) => {
         if (data.success) {
           setFlags(data.data);
@@ -130,7 +140,11 @@ export default function App() {
           setFlagsError(data.error || 'Failed to load feature flags');
         }
       })
-      .catch(() => setFlagsError('Error connecting to server to load feature flags'));
+      .catch((err) => {
+        if (err.message !== 'Unauthorized') {
+          setFlagsError('Error connecting to server to load feature flags');
+        }
+      });
   }, [token]);
 
   const handleCreateFlag = async (e) => {
@@ -153,6 +167,10 @@ export default function App() {
         },
         body: JSON.stringify({ name: flagKey })
       });
+      if (res.status === 401) {
+        handleLogout();
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setFlags([...flags, data.data]);
@@ -176,6 +194,10 @@ export default function App() {
         },
         body: JSON.stringify({ enabled: !currentEnabled })
       });
+      if (res.status === 401) {
+        handleLogout();
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setFlags(flags.map((f) => f.id === flagId ? data.data : f));
@@ -197,6 +219,10 @@ export default function App() {
           'Authorization': `Bearer ${token}`
         }
       });
+      if (res.status === 401) {
+        handleLogout();
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setFlags(flags.filter((f) => f.id !== flagId));
@@ -280,6 +306,8 @@ export default function App() {
                   value={newFlagName}
                   onChange={(e) => setNewFlagName(e.target.value)}
                   required
+                  pattern="^[a-z0-9_-]+$"
+                  title="Feature flag name must contain only lowercase letters, numbers, underscores, or hyphens"
                 />
                 <button
                   type="submit"
