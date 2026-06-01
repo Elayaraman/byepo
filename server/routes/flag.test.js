@@ -6,6 +6,8 @@ import { generateToken } from '../services/auth.js';
 
 let server;
 let baseUrl;
+let orgId;
+const orgName = 'TestOrg';
 
 test.before(async () => {
   // Wait for table to be created
@@ -18,6 +20,10 @@ test.before(async () => {
       resolve();
     });
   });
+
+  // Insert mock organization so check works with org_name
+  const res = await db.run("INSERT INTO org (name, inviteCode) VALUES (?, ?)", [orgName, 'TESTINVITE']);
+  orgId = res.lastID;
 });
 
 test.after(async () => {
@@ -77,7 +83,7 @@ test.describe('Flag Routes', () => {
   });
 
   test('GET /check - returns flag status correctly for end user', async () => {
-    const res = await fetch(`${baseUrl}/check?org_id=1&name=${flagName}`, {
+    const res = await fetch(`${baseUrl}/check?org_name=${orgName}&name=${flagName}`, {
       method: 'GET'
     });
     assert.strictEqual(res.status, 200);

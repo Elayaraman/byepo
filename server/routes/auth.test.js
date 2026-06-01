@@ -69,10 +69,11 @@ test.describe('Auth Routes', () => {
     });
 
     test('POST /signup - fails if email is already registered', async () => {
+        const org = await db.get("SELECT inviteCode FROM org WHERE id = ?", [orgId]);
         const res = await fetch(`${baseUrl}/auth/signup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: testEmail, password: 'pass2', orgId, inviteCode }),
+            body: JSON.stringify({ email: testEmail, password: 'pass2', orgId, inviteCode: org.inviteCode }),
         });
         assert.strictEqual(res.status, 400);
         const data = await res.json();

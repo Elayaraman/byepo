@@ -1,6 +1,6 @@
 import express from 'express'
 const router = express.Router()
-import { findOrgById } from '../services/org.js';
+import { findOrgById, rotateOrgInviteCode } from '../services/org.js';
 import * as userRepo from '../services/user.js';
 import { hashPassword, generateToken, verifyPassword } from '../services/auth.js';
 
@@ -29,6 +29,8 @@ router.post('/signup', async (req, res) => {
             passwordHash,
             role: 'org_admin'
         });
+
+        await rotateOrgInviteCode(org.id);
 
         const token = generateToken(user);
         res.json({ success: true, token, user });
