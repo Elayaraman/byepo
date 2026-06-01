@@ -2,7 +2,8 @@ import express from 'express';
 import * as flagRepo from '../dao/flag.js';
 import authMiddleware, { orgAdminOnly } from '../middleware/auth.js';
 import * as orgRepo from '../dao/org.js';
-import { validate, NotFoundError } from '../utils/errors.js';
+import { validate, NotFoundError, BadRequestError } from '../utils/errors.js';
+import { isValidFlagName } from '../../shared/validators.js';
 
 const router = express.Router();
 
@@ -22,6 +23,9 @@ router.use(authMiddleware, orgAdminOnly);
 router.post('/', async (req, res) => {
     validate(req.body, ['name'], 'Flag name is required');
     const { name, enabled } = req.body;
+    if (!isValidFlagName(name)) {
+        throw new BadRequestError('Feature flag name must contain only lowercase letters, numbers, underscores, or hyphens');
+    }
 
     const flag = await flagRepo.createFlag({ org_id: req.user.org_id, name, enabled });
     res.json({ success: true, data: flag });
@@ -41,6 +45,10 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
     const { name, enabled } = req.body;
     const org_id = req.user.org_id;
+
+    if (name && !isValidFlagName(name)) {
+        throw new BadRequestError('Feature flag name must contain only lowercase letters, numbers, underscores, or hyphens');
+    }
 
     const existing = await flagRepo.findFlagByIdAndOrgId(req.params.id, org_id);
     if (!existing) throw new NotFoundError('Feature flag not found');

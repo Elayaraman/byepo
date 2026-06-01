@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { isValidOrgName } from '../../shared/validators.js';
 
 function getCookie(name) {
   const value = `; ${document.cookie}`;
@@ -83,6 +84,14 @@ function App() {
 
   async function handleCreateOrg(e) {
     e.preventDefault();
+    const orgName = newOrgName.trim();
+    if (!orgName) return;
+
+    if (!isValidOrgName(orgName)) {
+      alert('Organization name must be a single word (no spaces)');
+      return;
+    }
+
     setCreateLoading(true);
     try {
       const res = await fetch('http://localhost:3000/_api/org', {
@@ -91,7 +100,7 @@ function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ name: newOrgName })
+        body: JSON.stringify({ name: orgName })
       });
       const data = await res.json();
       if (data.success) {
