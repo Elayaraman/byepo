@@ -55,6 +55,25 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+router.put('/:id', async (req, res) => {
+    try {
+        const { name } = req.body;
+        if (!name) {
+            return res.status(400).json({ success: false, error: 'Organization name is required' });
+        }
+        const org = await orgRepo.updateOrg(req.params.id, { name });
+        if (!org) {
+            return res.status(404).json({ success: false, error: 'Org not found' });
+        }
+        res.json({ success: true, data: org });
+    } catch (error) {
+        if (error.message && error.message.includes('UNIQUE constraint failed: org.name')) {
+            return res.status(400).json({ success: false, error: 'Organization name already exists' });
+        }
+        res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+    }
+});
+
 router.delete('/:id', async (req, res) => {
     try {
         await orgRepo.deleteOrg(req.params.id);
