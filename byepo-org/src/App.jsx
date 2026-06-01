@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { isValidFlagName } from '../../shared/validators.js';
 
 function getCookie(name) {
   const value = `; ${document.cookie}`;
@@ -135,7 +136,13 @@ export default function App() {
   const handleCreateFlag = async (e) => {
     e.preventDefault();
     setFlagsError('');
-    if (!newFlagName.trim()) return;
+    const flagKey = newFlagName.trim();
+    if (!flagKey) return;
+
+    if (!isValidFlagName(flagKey)) {
+      setFlagsError('Feature flag name must contain only lowercase letters, numbers, underscores, or hyphens');
+      return;
+    }
 
     try {
       const res = await fetch('http://localhost:3000/_api/flag', {
@@ -144,7 +151,7 @@ export default function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ name: newFlagName.trim() })
+        body: JSON.stringify({ name: flagKey })
       });
       const data = await res.json();
       if (data.success) {
