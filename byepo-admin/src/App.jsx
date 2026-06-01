@@ -26,6 +26,7 @@ function App() {
 
   const [orgList, setOrgList] = useState([]);
   const [newOrgName, setNewOrgName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [createLoading, setCreateLoading] = useState(false);
 
   const handleLogin = async (e) => {
@@ -192,6 +193,9 @@ function App() {
     );
   }
 
+  const filteredOrgs = orgList.filter((org) =>
+    org.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="flex min-h-screen items-center flex-col justify-between">
@@ -224,23 +228,33 @@ function App() {
             </button>
           </form>
 
+          <div className="mb-4 flex w-[600px]">
+            <input
+              type="text"
+              placeholder="search organisation"
+              className="flex-1 p-2 border border-gray-300"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
           <div>
-            {orgList.map((org) => (
-              <div key={org.id} className="mb-2 flex w-[600px] justify-between items-center p-4 border border-gray-200">
-                <div>
-                  <p className="text-sm"><strong>Name:</strong> {org.name}</p>
-                  <p className="text-sm"><strong>Invite Code:</strong> {org.inviteCode}</p>
+            {filteredOrgs.map((org) => (
+                <div key={org.id} className="mb-2 flex w-[600px] justify-between items-center p-4 border border-gray-200">
+                  <div>
+                    <p className="text-sm"><strong>Name:</strong> {org.name}</p>
+                    <p className="text-sm"><strong>Invite Code:</strong> {org.inviteCode}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleRotate(org.id)} className='btn border-1 px-4 py-2 rounded-sm cursor-pointer bg-blue-500 text-white hover:bg-blue-600' type="button">
+                      Rotate Code
+                    </button>
+                    <button onClick={() => handleDelete(org.id)} className='btn border-1 px-4 py-2 rounded-sm cursor-pointer bg-red-300 text-white hover:bg-red-500' type="button">
+                      Delete
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={() => handleRotate(org.id)} className='btn border-1 px-4 py-2 rounded-sm cursor-pointer bg-blue-500 text-white hover:bg-blue-600' type="button">
-                    Rotate Code
-                  </button>
-                  <button onClick={() => handleDelete(org.id)} className='btn border-1 px-4 py-2 rounded-sm cursor-pointer bg-red-300 text-white hover:bg-red-500' type="button">
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>
