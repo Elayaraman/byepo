@@ -14,7 +14,7 @@ const testEmail = `test_${uniquePrefix}@byepo.com`;
 test.before(async () => {
     // Wait for table to be created
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     await new Promise((resolve) => {
         server = app.listen(0, () => {
             const port = server.address().port;
@@ -120,6 +120,57 @@ test.describe('Auth Routes', () => {
         const data = await res.json();
         assert.strictEqual(data.success, true);
         assert.ok(data.token);
+    });
+
+    test('POST /login - fails with missing fields', async () => {
+        const res = await fetch(`${baseUrl}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: testEmail }),
+        });
+        assert.strictEqual(res.status, 400);
+        const data = await res.json();
+        assert.strictEqual(data.error, 'Email and password are required');
+    });
+
+    test('POST /signup - handles server error', async () => {
+        const originalGet = db.get;
+        db.get = () => { throw new Error("Mocked database error"); };
+        try {
+            const res = await fetch(`${baseUrl}/auth/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: 'err@byepo.com', password: 'pass', orgId, inviteCode }),
+            });
+            assert.strictEqual(res.status, 500);
+        } finally {
+            db.get = originalGet;
+        }
+    });
+
+    test('POST /login - handles server error', async () => {
+        const originalGet = db.get;
+        db.get = () => { throw new Error("Mocked database error"); };
+        try {
+            const res = await fetch(`${baseUrl}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: testEmail, password: 'pass', orgId }),
+            });
+            assert.strictEqual(res.status, 500);
+        } finally {
+            db.get = originalGet;
+        }
+    });
+
+    test('Unit Test - validate utility handles null object and default message', async () => {
+        const { validate, BadRequestError } = await import('../utils/errors.js');
+        assert.throws(() => validate(null, ['field']), (err) => {
+            return err instanceof BadRequestError && err.message === 'Request body/query is missing';
+        });
+        assert.throws(() => validate({}, ['field']), (err) => {
+            return err instanceof BadRequestError && err.message === 'Missing required fields: field';
+        });
     });
 
 });
