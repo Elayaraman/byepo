@@ -74,3 +74,16 @@ SQLite for DB file based.
 
 Trade-off nd enhancements:
 user management is not implemented yet for this scope.
+
+Major Features done as of jun 1 11:00 AM
+
+refinements:
+client validations
+    - org name should be a single word should not contain any special chars (need to update FE and validations in BE too)
+
+cleaner UI and UX flow (need test the flow and get design from stitch AI)
+shared code between code bases to remove duplicate like for error handling network handle nd components
+
+
+
+
