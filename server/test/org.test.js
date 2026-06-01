@@ -32,7 +32,7 @@ test.describe('Organization Routes', () => {
     const res = await fetch(baseUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: 'Org 1' }),
+      body: JSON.stringify({ name: 'Org1' }),
     });
     assert.strictEqual(res.status, 401);
     const data = await res.json();
@@ -47,7 +47,7 @@ test.describe('Organization Routes', () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${invalidToken}`,
       },
-      body: JSON.stringify({ name: 'Org 2' }),
+      body: JSON.stringify({ name: 'Org2' }),
     });
     assert.strictEqual(res.status, 401);
     const data = await res.json();
@@ -62,7 +62,7 @@ test.describe('Organization Routes', () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${orgAdminToken}`,
       },
-      body: JSON.stringify({ name: 'Org 3' }),
+      body: JSON.stringify({ name: 'Org3' }),
     });
     assert.strictEqual(res.status, 403);
     const data = await res.json();
@@ -71,8 +71,8 @@ test.describe('Organization Routes', () => {
   });
 
   test('POST / and GET / - creates organization and lists them', async () => {
-    const orgName = `Test Org ${Date.now()}`;
-    
+    const orgName = `TestOrg_${Date.now()}`;
+
     // Create Organization
     const createRes = await fetch(baseUrl, {
       method: 'POST',
@@ -170,6 +170,20 @@ test.describe('Organization Routes', () => {
     assert.strictEqual(res.status, 400);
   });
 
+  test('POST / - returns 400 if name is not a single word', async () => {
+    const res = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${superAdminToken}`,
+      },
+      body: JSON.stringify({ name: 'Invalid Space' }),
+    });
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'Organization name must be a single word (no spaces)');
+  });
+
   test('PUT /:id - updates organization and handles validation/errors', async () => {
     const orgName = `UpdateOrg_${Date.now()}`;
     const createRes = await fetch(baseUrl, {
@@ -181,6 +195,19 @@ test.describe('Organization Routes', () => {
       body: JSON.stringify({ name: orgName }),
     });
     const { data: created } = await createRes.json();
+
+    // 400 invalid name (spaces)
+    const badNameRes = await fetch(`${baseUrl}/${created.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${superAdminToken}`,
+      },
+      body: JSON.stringify({ name: 'Invalid Space' }),
+    });
+    assert.strictEqual(badNameRes.status, 400);
+    const badNameData = await badNameRes.json();
+    assert.strictEqual(badNameData.error, 'Organization name must be a single word (no spaces)');
 
     // 400 missing name
     const badRes = await fetch(`${baseUrl}/${created.id}`, {
@@ -200,7 +227,7 @@ test.describe('Organization Routes', () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${superAdminToken}`,
       },
-      body: JSON.stringify({ name: 'New Name' }),
+      body: JSON.stringify({ name: 'NewName' }),
     });
     assert.strictEqual(notFoundRes.status, 404);
 

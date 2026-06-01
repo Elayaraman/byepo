@@ -1,7 +1,8 @@
 import express from 'express';
 import * as orgRepo from '../dao/org.js';
 import authMiddleware, { superAdminOnly } from '../middleware/auth.js';
-import { validate, NotFoundError } from '../utils/errors.js';
+import { validate, NotFoundError, BadRequestError } from '../utils/errors.js';
+import { isValidOrgName } from '../../shared/validators.js';
 
 const router = express.Router();
 
@@ -15,6 +16,9 @@ router.use(authMiddleware, superAdminOnly);
 
 router.post('/', async (req, res) => {
     validate(req.body, ['name'], 'Organization name is required');
+    if (!isValidOrgName(req.body.name)) {
+        throw new BadRequestError('Organization name must be a single word (no spaces)');
+    }
     const org = await orgRepo.createOrg({ name: req.body.name });
     res.json({ success: true, data: org });
 });
@@ -32,6 +36,9 @@ router.get('/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
     validate(req.body, ['name'], 'Organization name is required');
+    if (!isValidOrgName(req.body.name)) {
+        throw new BadRequestError('Organization name must be a single word (no spaces)');
+    }
     const org = await orgRepo.updateOrg(req.params.id, { name: req.body.name });
     if (!org) throw new NotFoundError('Org not found');
     res.json({ success: true, data: org });
