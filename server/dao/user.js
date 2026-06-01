@@ -1,4 +1,4 @@
-import db from './db.js';
+import db from '../services/db.js';
 
 export async function findUserByEmail(email) {
     return db.get('SELECT * FROM users WHERE email = ?', [email]);

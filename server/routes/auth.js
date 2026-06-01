@@ -1,7 +1,7 @@
 import express from 'express'
 const router = express.Router()
-import { findOrgById, rotateOrgInviteCode } from '../services/org.js';
-import * as userRepo from '../services/user.js';
+import { findOrgById, rotateOrgInviteCode } from '../dao/org.js';
+import * as userRepo from '../dao/user.js';
 import { hashPassword, generateToken, verifyPassword } from '../services/auth.js';
 
 router.post('/signup', async (req, res) => {

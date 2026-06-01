@@ -1,5 +1,5 @@
 import express from 'express';
-import * as orgRepo from '../services/org.js';
+import * as orgRepo from '../dao/org.js';
 import authMiddleware, { superAdminOnly } from '../middleware/auth.js';
 
 const router = express.Router();

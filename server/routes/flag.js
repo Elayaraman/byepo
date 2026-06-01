@@ -1,7 +1,7 @@
 import express from 'express';
-import * as flagRepo from '../services/flag.js';
+import * as flagRepo from '../dao/flag.js';
 import authMiddleware, { orgAdminOnly } from '../middleware/auth.js';
-import * as orgRepo from '../services/org.js';
+import * as orgRepo from '../dao/org.js';
 
 const router = express.Router();
 

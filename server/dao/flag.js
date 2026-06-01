@@ -1,4 +1,4 @@
-import db from './db.js';
+import db from '../services/db.js';
 
 export async function createFlag({ org_id, name, enabled = true }) {
     const result = await db.run(
