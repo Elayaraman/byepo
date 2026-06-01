@@ -117,6 +117,28 @@ test.describe('Flag Routes', () => {
     assert.strictEqual(res.status, 400);
   });
 
+  test('POST / - returns 400 if flag name contains uppercase letters or spaces', async () => {
+    const res1 = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${orgAdminToken1}`
+      },
+      body: JSON.stringify({ name: 'UppercaseFlag' }),
+    });
+    assert.strictEqual(res1.status, 400);
+
+    const res2 = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${orgAdminToken1}`
+      },
+      body: JSON.stringify({ name: 'flag with spaces' }),
+    });
+    assert.strictEqual(res2.status, 400);
+  });
+
   test('GET /:id - returns flag by ID and handles 404', async () => {
     // 200 success
     const res = await fetch(`${baseUrl}/${createdFlagId}`, {
@@ -137,6 +159,17 @@ test.describe('Flag Routes', () => {
   });
 
   test('PUT /:id - updates flag and handles 404', async () => {
+    // 400 validation error (uppercase)
+    const badRes = await fetch(`${baseUrl}/${createdFlagId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${orgAdminToken1}`
+      },
+      body: JSON.stringify({ name: 'UppercaseFlag' })
+    });
+    assert.strictEqual(badRes.status, 400);
+
     // 200 success
     const res = await fetch(`${baseUrl}/${createdFlagId}`, {
       method: 'PUT',
@@ -260,7 +293,7 @@ test.describe('Flag Routes', () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${orgAdminToken1}`
         },
-        body: JSON.stringify({ name: 'ErrorFlag' }),
+        body: JSON.stringify({ name: 'error_flag' }),
       });
       assert.strictEqual(createRes.status, 500);
 
@@ -283,7 +316,7 @@ test.describe('Flag Routes', () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${orgAdminToken1}`
         },
-        body: JSON.stringify({ name: 'NewName' }),
+        body: JSON.stringify({ name: 'new_name' }),
       });
       assert.strictEqual(updateRes.status, 500);
 
