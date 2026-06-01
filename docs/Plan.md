@@ -83,4 +83,4 @@ client validations
 
 cleaner UI and UX flow (need test the flow and get design from stitch AI)
 shared code between code bases to remove duplicate like for error handling network handle nd components
-
+having central error handle for routes to reduce line and better handling
