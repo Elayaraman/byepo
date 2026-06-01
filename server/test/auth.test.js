@@ -173,4 +173,27 @@ test.describe('Auth Routes', () => {
         });
     });
 
+    test('Unit Test - shared validators work as expected', async () => {
+        const { isValidOrgName, isValidFlagName, isCertainValue } = await import('../../shared/validators.js');
+        
+        // Org Name tests
+        assert.strictEqual(isValidOrgName('MyOrg'), true);
+        assert.strictEqual(isValidOrgName('My Org'), false);
+        assert.strictEqual(isValidOrgName(''), false);
+        assert.strictEqual(isValidOrgName(null), false);
+
+        // Flag Name tests
+        assert.strictEqual(isValidFlagName('my-flag_1'), true);
+        assert.strictEqual(isValidFlagName('My-Flag'), false);
+        assert.strictEqual(isValidFlagName('my flag'), false);
+        assert.strictEqual(isValidFlagName(''), false);
+        assert.strictEqual(isValidFlagName(null), false);
+
+        // Certain value tests
+        assert.strictEqual(isCertainValue('active', ['active', 'inactive']), true);
+        assert.strictEqual(isCertainValue('pending', ['active', 'inactive']), false);
+        assert.strictEqual(isCertainValue('yes', 'yes'), true);
+        assert.strictEqual(isCertainValue('no', 'yes'), false);
+    });
+
 });
