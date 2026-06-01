@@ -71,3 +71,6 @@ react for all FE applications
     tailwind for styling
 express for BE for simpler setup
 SQLite for DB file based.
+
+Trade-off nd enhancements:
+user management is not implemented yet for this scope.
