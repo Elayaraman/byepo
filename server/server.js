@@ -4,6 +4,8 @@ import db from './services/db.js'
 import authRouter from './routes/auth.js'
 import orgRouter from './routes/org.js'
 import flagRouter from './routes/flag.js'
+import errorHandler from './middleware/errorHandler.js'
+import { logger } from './services/logger.js'
 
 const app = express()
 const port = 3000
@@ -11,9 +13,23 @@ const PREFIX = '/_api/'
 
 app.use(cors())
 app.use(express.json())
+
+// Incoming request logger middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    logger.info(`${req.method} ${req.originalUrl || req.url} ${res.statusCode} - ${duration}ms`);
+  });
+  next();
+});
+
 app.use(`${PREFIX}auth`, authRouter)
 app.use(`${PREFIX}org`, orgRouter)
 app.use(`${PREFIX}flag`, flagRouter)
+
+// Error Handler Middleware
+app.use(errorHandler)
 
 await db.exec(`
   CREATE TABLE IF NOT EXISTS org (
@@ -39,8 +55,9 @@ CREATE TABLE IF NOT EXISTS feature_flags (
     enabled BOOLEAN NOT NULL DEFAULT 0,
     FOREIGN KEY (org_id) REFERENCES org(id),
     UNIQUE(org_id, name)
-);
+  );
 `)
+logger.info("Database initialized successfully");
 
 app.get('/', (req, res) => {
   res.send('Server is running')
@@ -48,7 +65,7 @@ app.get('/', (req, res) => {
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(port, () => {
-    console.log(`Server listening on port ${port}`)
+    logger.info(`Server listening on port ${port}`)
   })
 }
 
