@@ -31,6 +31,11 @@ export default function App() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Feature Flag State
+  const [flags, setFlags] = useState([]);
+  const [newFlagName, setNewFlagName] = useState('');
+  const [flagsError, setFlagsError] = useState('');
+
   useEffect(() => {
     if (!orgName) {
       setStatus('waiting_for_org');
@@ -85,7 +90,6 @@ export default function App() {
         } else {
           setCookie('token', data.token);
           setToken(data.token);
-          // Clear inputs
           setEmail('');
           setPassword('');
           setInviteCode('');
@@ -103,6 +107,98 @@ export default function App() {
   const handleLogout = () => {
     deleteCookie('token');
     setToken(null);
+    setFlags([]);
+  };
+
+  useEffect(() => {
+    if (!token) {
+      setFlags([]);
+      return;
+    }
+
+    fetch('http://localhost:3000/_api/flag', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setFlags(data.data);
+        } else {
+          setFlagsError(data.error || 'Failed to load feature flags');
+        }
+      })
+      .catch(() => setFlagsError('Error connecting to server to load feature flags'));
+  }, [token]);
+
+  const handleCreateFlag = async (e) => {
+    e.preventDefault();
+    setFlagsError('');
+    if (!newFlagName.trim()) return;
+
+    try {
+      const res = await fetch('http://localhost:3000/_api/flag', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ name: newFlagName.trim() })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFlags([...flags, data.data]);
+        setNewFlagName('');
+      } else {
+        setFlagsError(data.error || 'Failed to create feature flag');
+      }
+    } catch (err) {
+      setFlagsError('Error connecting to server to create feature flag');
+    }
+  };
+
+  const handleToggleFlag = async (flagId, currentEnabled) => {
+    setFlagsError('');
+    try {
+      const res = await fetch(`http://localhost:3000/_api/flag/${flagId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ enabled: !currentEnabled })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFlags(flags.map((f) => f.id === flagId ? data.data : f));
+      } else {
+        setFlagsError(data.error || 'Failed to update feature flag');
+      }
+    } catch (err) {
+      setFlagsError('Error connecting to server to update feature flag');
+    }
+  };
+
+  const handleDeleteFlag = async (flagId) => {
+    if (!window.confirm("Are you sure you want to delete this feature flag?")) return;
+    setFlagsError('');
+    try {
+      const res = await fetch(`http://localhost:3000/_api/flag/${flagId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFlags(flags.filter((f) => f.id !== flagId));
+      } else {
+        setFlagsError(data.error || 'Failed to delete feature flag');
+      }
+    } catch (err) {
+      setFlagsError('Error connecting to server to delete feature flag');
+    }
   };
 
   return (
@@ -147,7 +243,7 @@ export default function App() {
       )}
 
       {status === 'valid' && (
-        <div className="p-8 font-sans max-w-md w-full border border-gray-300">
+        <div className="p-8 font-sans max-w-[600px] w-full border border-gray-300">
           <header className="mb-6 flex justify-between items-center border-b pb-4">
             <h1 className="text-xl font-bold">{orgName} - Admin</h1>
             {token && (
@@ -161,12 +257,67 @@ export default function App() {
           </header>
 
           {token ? (
-            <div className="space-y-4">
-              <div className="p-4 bg-green-100 text-green-800 border border-green-300 font-bold">
-                Successfully Authenticated!
+            <div className="space-y-6">
+              {flagsError && (
+                <div className="p-2 bg-red-100 text-red-700 border border-red-300 text-sm">
+                  {flagsError}
+                </div>
+              )}
+
+              {/* Create Flag Form */}
+              <form onSubmit={handleCreateFlag} className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="New flag key (e.g. new-ui)"
+                  className="flex-1 p-2 border border-gray-300"
+                  value={newFlagName}
+                  onChange={(e) => setNewFlagName(e.target.value)}
+                  required
+                />
+                <button
+                  type="submit"
+                  className="bg-green-600 text-white px-4 py-2 cursor-pointer rounded-sm hover:bg-green-700 whitespace-nowrap text-sm font-bold"
+                >
+                  Add Flag
+                </button>
+              </form>
+
+              {/* Flags List */}
+              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+                {flags.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">No feature flags found. Add one above!</p>
+                ) : (
+                  flags.map((flag) => (
+                    <div key={flag.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-sm">
+                      <div className="flex-1 min-w-0 pr-2">
+                        <p className="font-mono text-sm truncate font-bold" title={flag.name}>
+                          {flag.name}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleFlag(flag.id, flag.enabled)}
+                          className={`px-3 py-1 text-xs font-bold rounded-sm cursor-pointer border ${
+                            flag.enabled
+                              ? 'bg-green-600 text-white border-green-700 hover:bg-green-700'
+                              : 'bg-red-600 text-white border-red-700 hover:bg-red-700'
+                          }`}
+                        >
+                          {flag.enabled ? 'Enabled' : 'Disabled'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteFlag(flag.id)}
+                          className="btn px-3 py-1 rounded-sm border border-gray-300 cursor-pointer bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs font-bold"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
-              <p>Welcome to the dashboard for <strong>{orgName}</strong>.</p>
-              <p className="text-sm text-gray-600">You are logged in as an Organization Admin.</p>
             </div>
           ) : (
             <div>
