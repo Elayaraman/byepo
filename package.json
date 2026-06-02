@@ -13,6 +13,7 @@
     "start:check": "npm run --prefix byepo-check dev",
     "start": "concurrently -n \"server,admin,org,check\" -c \"magenta,cyan,blue,yellow\" \"npm run start:server\" \"npm run start:admin\" \"npm run start:org\" \"npm run start:check\"",
     "dev": "npm start",
+    "build": "npm run --prefix byepo-admin build && npm run --prefix byepo-org build && npm run --prefix byepo-check build",
     "test": "npm run --prefix server test"
   },
   "engines": {
