@@ -6,7 +6,7 @@ export default function App() {
   const [inputOrgName, setInputOrgName] = useState('');
   const [orgId, setOrgId] = useState(null);
   const [status, setStatus] = useState('loading');
-  const [token, setToken] = useState(getCookie('token'));
+  const [token, setToken] = useState(getCookie('org_admin_token'));
   const [authMode, setAuthMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -72,7 +72,7 @@ export default function App() {
         if (data.user.role !== 'org_admin') {
           setError('Access denied. Org admin only.');
         } else {
-          setCookie('token', data.token);
+          setCookie('org_admin_token', data.token);
           setToken(data.token);
           setEmail('');
           setPassword('');
@@ -89,7 +89,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    deleteCookie('token');
+    deleteCookie('org_admin_token');
     setToken(null);
     setFlags([]);
     setOrgName('');

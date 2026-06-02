@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { isValidOrgName, getCookie, setCookie, deleteCookie } from '../../shared/validators.js';
 
 function App() {
-  const [token, setToken] = useState(getCookie('token'));
+  const [token, setToken] = useState(getCookie('super_admin_token'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -30,7 +30,7 @@ function App() {
         if (data.user.role !== 'super_admin') {
           setError('Access denied. Super admin only.');
         } else {
-          setCookie('token', data.token);
+          setCookie('super_admin_token', data.token);
           setToken(data.token);
         }
       } else {
@@ -44,7 +44,7 @@ function App() {
   };
 
   const handleLogout = () => {
-    deleteCookie('token');
+    deleteCookie('super_admin_token');
     setToken(null);
   };
 
