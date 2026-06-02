@@ -4,6 +4,28 @@ A multi-tenant feature flag platform with role-based access. Super admins manage
 
 ---
 
+## Architecture Decisions & Engineering Trade-Offs
+
+This project is structured as a light, clean monorepo designed for rapid local setup and clear separation of concerns.
+
+### 1. Simple Monorepo Structure (No Complex Tooling)
+* **Decision:** We used standard Node/npm scripts without Lerna, Nx, or Turborepo.
+* **Trade-Off:** Keeps the learning curve and dependencies extremely low for evaluators. Everything runs with a single `npm start` command from the root.
+
+### 2. SQLite Database (File-Based)
+* **Decision:** SQLite is used as the relational database engine.
+* **Trade-Off:** Zero installation or external service dependency (no Docker, Postgres, or MySQL to configure). The DB is initialized and run completely in-memory or in a local file, making evaluation seamless.
+
+### 3. Shared Folder Code Abstraction
+* **Decision:** Abstracted common validation logic (`validators.js`) and UI components (`FormField.jsx`, `OrgSelector.jsx`, etc.) into a top-level `/shared` folder.
+* **Trade-Off:** Increases code reuse across all three applications. In Tailwind CSS v4, this required specifying custom `@source "../../shared"` directives so that utility classes are scanned and compiled correctly from external sibling directories.
+
+### 4. Namespaced Localhost Cookies
+* **Decision:** Scoped cookies specifically (`super_admin_token` and `org_admin_token`) instead of generic `token` names.
+* **Trade-Off:** Since Vite apps run on different localhost ports (e.g. 5173, 5174, 5175), cookies share the same `localhost` domain scope. Namespacing them prevents active sessions in one app from overwriting and logging out active sessions in another.
+
+---
+
 ## Architecture
 
 ```
@@ -138,9 +160,11 @@ ADMIN_PASSWORD=custom_password
 ### Flow 3: End user checks a flag
 
 1. Open **byepo-check** at `http://localhost:5175`
-2. Enter the org name (e.g. `acme`) → click **Continue**
-3. Type a feature key (e.g. `dark-mode`) → click **Check Status**
-4. The result shows **Enabled** or **Disabled**
+2. Enter the Organization Name (e.g. `acme`) and the Feature Key (e.g. `dark-mode`).
+   * *Alternatively*, open `http://localhost:5175/?org=acme&name=dark-mode` to prefill the fields automatically.
+3. Check the terms agreement checkbox.
+4. Click **Check Status**.
+5. The result shows **Feature is enabled** or **Feature is disabled**.
 
 > No authentication required — this is a public endpoint.
 
