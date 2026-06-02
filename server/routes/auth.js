@@ -3,6 +3,14 @@ import { findOrgById, rotateOrgInviteCode } from '../dao/org.js';
 import * as userRepo from '../dao/user.js';
 import { hashPassword, generateToken, verifyPassword } from '../services/auth.js';
 import { validate, BadRequestError, UnauthorizedError } from '../utils/errors.js';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load admin credentials from .env.admin if it exists
+dotenv.config({ path: path.resolve(process.cwd(), '.env.admin') });
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@byepo.com';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 const router = express.Router();
 
@@ -31,7 +39,7 @@ router.post('/login', async (req, res) => {
     validate(req.body, ['email', 'password'], 'Email and password are required');
     const { email, password, orgId } = req.body;
 
-    if (email === 'admin@byepo.com' && password === 'admin123') {
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
         const user = { id: 1, email, role: 'super_admin', org_id: null };
         return res.json({ success: true, token: generateToken(user), user });
     }
