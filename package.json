@@ -15,6 +15,9 @@
     "dev": "npm start",
     "test": "npm run --prefix server test"
   },
+  "engines": {
+    "node": "22.x"
+  },
   "types": "module",
   "repository": {
     "type": "git",
