@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { isValidFlagName, FLAG_NAME_PATTERN, FLAG_NAME_PATTERN_TITLE } from '../../../shared/validators.js';
 import ErrorBanner from '../../../shared/components/ErrorBanner.jsx';
+import FormField from '../../../shared/components/FormField.jsx';
 import FlagList from './FlagList.jsx';
+import { useForm, apiRequest } from '../../../shared/fe_utils.js';
 
 /**
  * Flag management section: create form + flag list.
@@ -11,129 +13,125 @@ import FlagList from './FlagList.jsx';
  */
 export default function FlagDashboard({ token, onLogout }) {
   const [flags, setFlags] = useState([]);
-  const [newFlagName, setNewFlagName] = useState('');
-  const [error, setError] = useState('');
+
+  const validate = (values) => {
+    const errors = {};
+    const flagKey = values.newFlagName.trim();
+    if (!flagKey) {
+      errors.newFlagName = 'Flag name is required';
+    } else if (!isValidFlagName(flagKey)) {
+      errors.newFlagName = FLAG_NAME_PATTERN_TITLE;
+    }
+    return errors;
+  };
+
+  const { values, setValues, errors, setErrors, loading, handleChange, handleSubmit } = useForm(
+    { newFlagName: '' },
+    validate
+  );
+
+  const handleFetchFlags = async () => {
+    try {
+      const data = await apiRequest('/_api/flag', { token, onUnauthorized: onLogout });
+      setFlags(data.data);
+    } catch (err) {
+      setErrors({ global: err.message });
+    }
+  };
 
   useEffect(() => {
-    fetch('/_api/flag', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => {
-        if (res.status === 401) {
-          onLogout();
-          throw new Error('Unauthorized');
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data.success) setFlags(data.data);
-        else setError(data.error || 'Failed to load feature flags');
-      })
-      .catch((err) => {
-        if (err.message !== 'Unauthorized') {
-          setError('Error connecting to server to load feature flags');
-        }
-      });
+    handleFetchFlags();
   }, [token]);
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    setError('');
-    const flagKey = newFlagName.trim();
-    if (!flagKey) return;
-    if (!isValidFlagName(flagKey)) {
-      setError(FLAG_NAME_PATTERN_TITLE);
-      return;
-    }
+  const handleCreate = async (formValues) => {
     try {
-      const res = await fetch('/_api/flag', {
+      const data = await apiRequest('/_api/flag', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name: flagKey }),
+        token,
+        onUnauthorized: onLogout,
+        body: JSON.stringify({ name: formValues.newFlagName.trim() }),
       });
-      if (res.status === 401) { onLogout(); return; }
-      const data = await res.json();
-      if (data.success) {
-        setFlags([...flags, data.data]);
-        setNewFlagName('');
-      } else {
-        setError(data.error || 'Failed to create feature flag');
-      }
-    } catch {
-      setError('Error connecting to server to create feature flag');
+      setFlags([...flags, data.data]);
+      setValues({ newFlagName: '' });
+    } catch (err) {
+      setErrors({ newFlagName: err.message });
     }
   };
 
   const handleToggle = async (flagId, currentEnabled) => {
-    setError('');
     try {
-      const res = await fetch(`/_api/flag/${flagId}`, {
+      const data = await apiRequest(`/_api/flag/${flagId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        token,
+        onUnauthorized: onLogout,
         body: JSON.stringify({ enabled: !currentEnabled }),
       });
-      if (res.status === 401) { onLogout(); return; }
-      const data = await res.json();
-      if (data.success) {
-        setFlags(flags.map((f) => (f.id === flagId ? data.data : f)));
-      } else {
-        setError(data.error || 'Failed to update feature flag');
-      }
-    } catch {
-      setError('Error connecting to server to update feature flag');
+      setFlags(flags.map((f) => (f.id === flagId ? data.data : f)));
+    } catch (err) {
+      setErrors({ global: err.message });
+    }
+  };
+
+  const handleRename = async (flagId, newName) => {
+    try {
+      const data = await apiRequest(`/_api/flag/${flagId}`, {
+        method: 'PUT',
+        token,
+        onUnauthorized: onLogout,
+        body: JSON.stringify({ name: newName }),
+      });
+      setFlags(flags.map((f) => (f.id === flagId ? data.data : f)));
+    } catch (err) {
+      setErrors({ global: err.message });
     }
   };
 
   const handleDelete = async (flagId) => {
     if (!window.confirm('Are you sure you want to delete this feature flag?')) return;
-    setError('');
     try {
-      const res = await fetch(`/_api/flag/${flagId}`, {
+      await apiRequest(`/_api/flag/${flagId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        token,
+        onUnauthorized: onLogout,
       });
-      if (res.status === 401) { onLogout(); return; }
-      const data = await res.json();
-      if (data.success) {
-        setFlags(flags.filter((f) => f.id !== flagId));
-      } else {
-        setError(data.error || 'Failed to delete feature flag');
-      }
-    } catch {
-      setError('Error connecting to server to delete feature flag');
+      setFlags(flags.filter((f) => f.id !== flagId));
+    } catch (err) {
+      setErrors({ global: err.message });
     }
   };
 
   return (
     <div className="space-y-6">
-      <ErrorBanner message={error} />
+      <ErrorBanner message={errors.global} />
 
-      <form onSubmit={handleCreate} className="flex gap-2">
-        <input
-          type="text"
-          placeholder="New flag key (e.g. new-ui)"
-          className="flex-1 p-2 border border-gray-300"
-          value={newFlagName}
-          onChange={(e) => setNewFlagName(e.target.value)}
-          required
-          pattern={FLAG_NAME_PATTERN}
-          title={FLAG_NAME_PATTERN_TITLE}
-        />
+      <form onSubmit={(e) => handleSubmit(e, handleCreate)} className="flex gap-2 items-end">
+        <div className="flex-1">
+          <FormField
+            label="New Flag Key"
+            id="newFlagName"
+            type="text"
+            placeholder="e.g. new-checkout-flow"
+            value={values.newFlagName}
+            onChange={handleChange}
+            error={errors.newFlagName}
+            required
+          />
+        </div>
         <button
           type="submit"
-          className="bg-green-600 text-white px-4 py-2 cursor-pointer rounded-sm hover:bg-green-700 whitespace-nowrap text-sm font-bold"
+          disabled={loading}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 cursor-pointer font-bold rounded-sm disabled:opacity-50 h-10 flex items-center transition-colors text-sm"
         >
-          Add Flag
+          {loading ? 'Adding...' : 'Add Flag'}
         </button>
       </form>
 
-      <FlagList flags={flags} onToggle={handleToggle} onDelete={handleDelete} />
+      <FlagList
+        flags={flags}
+        onToggle={handleToggle}
+        onDelete={handleDelete}
+        onRename={handleRename}
+      />
     </div>
   );
 }
