@@ -53,7 +53,10 @@ export default function FlagChecker({ orgName }) {
           type="text"
           placeholder="e.g. new-checkout-flow"
           value={values.flagKey}
-          onChange={handleChange}
+          onChange={(e) => {
+            handleChange(e);
+            setResult(null);
+          }}
           error={errors.flagKey}
           required
         />
@@ -63,7 +66,10 @@ export default function FlagChecker({ orgName }) {
             type="checkbox"
             id="agreeTerms"
             checked={agreed}
-            onChange={(e) => setAgreed(e.target.checked)}
+            onChange={(e) => {
+              setAgreed(e.target.checked);
+              setResult(null);
+            }}
             className="h-4 w-4 mt-0.5 rounded-sm border-gray-300 cursor-pointer"
             required
           />

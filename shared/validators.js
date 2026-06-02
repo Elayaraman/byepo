@@ -9,9 +9,8 @@
  */
 export const FLAG_NAME_PATTERN = '^[a-z0-9_-]+$';
 
-/** Title text to show on invalid flag name (for input title attribute). */
 export const FLAG_NAME_PATTERN_TITLE =
-    'Feature flag name must contain only lowercase letters, numbers, underscores, or hyphens';
+    'Feature flag name must contain only lowercase letters, numbers, underscores, or hyphens, and be at least 3 characters long';
 
 /**
  * Checks if an organization name is valid (a single word with no spaces/whitespace).
@@ -33,7 +32,7 @@ export function isValidOrgName(name) {
 export function isValidFlagName(name) {
     if (typeof name !== 'string') return false;
     const trimmed = name.trim();
-    if (trimmed.length === 0) return false;
+    if (trimmed.length < 3) return false;
     return new RegExp(FLAG_NAME_PATTERN).test(trimmed);
 }
 

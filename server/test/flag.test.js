@@ -137,6 +137,18 @@ test.describe('Flag Routes', () => {
       body: JSON.stringify({ name: 'flag with spaces' }),
     });
     assert.strictEqual(res2.status, 400);
+
+    const res3 = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${orgAdminToken1}`
+      },
+      body: JSON.stringify({ name: 'ab' }),
+    });
+    assert.strictEqual(res3.status, 400);
+    const data3 = await res3.json();
+    assert.ok(data3.error.includes('at least 3 characters'));
   });
 
   test('GET /:id - returns flag by ID and handles 404', async () => {

@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
     validate(req.body, ['name'], 'Flag name is required');
     const { name, enabled } = req.body;
     if (!isValidFlagName(name)) {
-        throw new BadRequestError('Feature flag name must contain only lowercase letters, numbers, underscores, or hyphens');
+        throw new BadRequestError('Feature flag name must contain only lowercase letters, numbers, underscores, or hyphens, and be at least 3 characters long');
     }
 
     const flag = await flagRepo.createFlag({ org_id: req.user.org_id, name, enabled });
@@ -47,7 +47,7 @@ router.put('/:id', async (req, res) => {
     const org_id = req.user.org_id;
 
     if (name && !isValidFlagName(name)) {
-        throw new BadRequestError('Feature flag name must contain only lowercase letters, numbers, underscores, or hyphens');
+        throw new BadRequestError('Feature flag name must contain only lowercase letters, numbers, underscores, or hyphens, and be at least 3 characters long');
     }
 
     const existing = await flagRepo.findFlagByIdAndOrgId(req.params.id, org_id);
