@@ -2,34 +2,48 @@ import { useState } from 'react';
 import FormField from '../../../shared/components/FormField.jsx';
 import ErrorBanner from '../../../shared/components/ErrorBanner.jsx';
 import { useForm, apiRequest } from '../../../shared/fe_utils.js';
-import { isValidFlagName, FLAG_NAME_PATTERN_TITLE } from '../../../shared/validators.js';
+import { isValidOrgName, isValidFlagName, FLAG_NAME_PATTERN_TITLE } from '../../../shared/validators.js';
 
 /**
  * Flag status checker form + result display.
- * @param {{ orgName: string }} props
+ * Reads org and name from URL query parameters (e.g. ?org=acme&name=new-ui) if present.
  */
-export default function FlagChecker({ orgName }) {
+export default function FlagChecker() {
   const [result, setResult] = useState(null);
   const [agreed, setAgreed] = useState(false);
 
+  // Read query params on load
+  const params = new URLSearchParams(window.location.search);
+  const initialOrg = params.get('org') || '';
+  const initialFlag = params.get('name') || '';
+
   const validate = (values) => {
     const errors = {};
-    if (!values.flagKey.trim()) {
+    const org = values.orgName.trim();
+    const flag = values.flagKey.trim();
+
+    if (!org) {
+      errors.orgName = 'Organization name is required';
+    } else if (!isValidOrgName(org)) {
+      errors.orgName = 'Organization name must be a single word without spaces';
+    }
+
+    if (!flag) {
       errors.flagKey = 'Feature key is required';
-    } else if (!isValidFlagName(values.flagKey)) {
+    } else if (!isValidFlagName(flag)) {
       errors.flagKey = FLAG_NAME_PATTERN_TITLE;
     }
     return errors;
   };
 
   const { values, errors, setErrors, loading, handleChange, handleSubmit } = useForm(
-    { flagKey: '' },
+    { orgName: initialOrg, flagKey: initialFlag },
     validate
   );
 
   const handleCheck = async (formValues) => {
     try {
-      const data = await apiRequest(`/_api/flag/check?org_name=${orgName}&name=${formValues.flagKey}`);
+      const data = await apiRequest(`/_api/flag/check?org_name=${formValues.orgName.trim()}&name=${formValues.flagKey.trim()}`);
       setResult(data.enabled ? 'Enabled' : 'Disabled');
     } catch (err) {
       setErrors({ global: err.message });
@@ -40,12 +54,23 @@ export default function FlagChecker({ orgName }) {
     <main className="max-w-md w-full border border-gray-300 p-8 rounded-sm shadow-sm bg-white font-sans">
       <h2 className="text-xl font-bold mb-2">Check Feature Status</h2>
       <p className="mb-6 text-sm text-gray-600">
-        Verify the status of a feature toggle for <strong>{orgName}</strong>.
+        Verify the status of a feature toggle for your organization.
       </p>
 
       <ErrorBanner message={errors.global} />
 
       <form onSubmit={(e) => handleSubmit(e, handleCheck)} className="space-y-4">
+        <FormField
+          label="Organization Name"
+          id="orgName"
+          type="text"
+          placeholder="e.g. acme"
+          value={values.orgName}
+          onChange={handleChange}
+          error={errors.orgName}
+          required
+        />
+
         <FormField
           label="Feature Key"
           id="flagKey"
