@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getCookie, setCookie, deleteCookie } from '../../shared/validators.js';
+import { getCookie, setCookie, deleteCookie } from '../../shared/fe_utils.js';
 import OrgSelector from '../../shared/components/OrgSelector.jsx';
 import InvalidOrg from '../../shared/components/InvalidOrg.jsx';
 import LoadingSpinner from '../../shared/components/LoadingSpinner.jsx';

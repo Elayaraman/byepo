@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getCookie, setCookie, deleteCookie } from '../../shared/validators.js';
+import { getCookie, setCookie, deleteCookie } from '../../shared/fe_utils.js';
 import LoginPage from './components/LoginPage.jsx';
 import Dashboard from './components/Dashboard.jsx';
 
