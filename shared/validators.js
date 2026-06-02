@@ -38,6 +38,15 @@ export function isValidFlagName(name) {
 }
 
 /**
+ * Checks if a password is valid (at least 6 characters).
+ * @param {string} password
+ * @returns {boolean}
+ */
+export function isValidPassword(password) {
+    return typeof password === 'string' && password.length >= 6;
+}
+
+/**
  * Checks if a value matches a certain value or is present in a set of certain values.
  * @param {*} value 
  * @param {*} certainValue 

@@ -3,6 +3,7 @@ import { findOrgById, rotateOrgInviteCode } from '../dao/org.js';
 import * as userRepo from '../dao/user.js';
 import { hashPassword, generateToken, verifyPassword } from '../services/auth.js';
 import { validate, BadRequestError, UnauthorizedError } from '../utils/errors.js';
+import { isValidPassword } from '../../shared/validators.js';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -17,6 +18,10 @@ const router = express.Router();
 router.post('/signup', async (req, res) => {
     validate(req.body, ['email', 'password', 'orgId', 'inviteCode'], 'Missing required fields');
     const { email, password, orgId, inviteCode } = req.body;
+
+    if (!isValidPassword(password)) {
+        throw new BadRequestError('Password must be at least 6 characters');
+    }
 
     const org = await findOrgById(orgId);
     if (!org || org.inviteCode !== inviteCode) throw new BadRequestError('Invalid invite code');

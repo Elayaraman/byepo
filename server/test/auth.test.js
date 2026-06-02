@@ -49,18 +49,29 @@ test.describe('Auth Routes', () => {
         const res = await fetch(`${baseUrl}/auth/signup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: testEmail, password: 'pass', orgId, inviteCode: 'WRONGCODE' }),
+            body: JSON.stringify({ email: testEmail, password: 'password', orgId, inviteCode: 'WRONGCODE' }),
         });
         assert.strictEqual(res.status, 400);
         const data = await res.json();
         assert.strictEqual(data.error, 'Invalid invite code');
     });
 
+    test('POST /signup - fails with password under 6 characters', async () => {
+        const res = await fetch(`${baseUrl}/auth/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: testEmail, password: 'short', orgId, inviteCode }),
+        });
+        assert.strictEqual(res.status, 400);
+        const data = await res.json();
+        assert.strictEqual(data.error, 'Password must be at least 6 characters');
+    });
+
     test('POST /signup - succeeds with valid data', async () => {
         const res = await fetch(`${baseUrl}/auth/signup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: testEmail, password: 'pass', orgId, inviteCode }),
+            body: JSON.stringify({ email: testEmail, password: 'password', orgId, inviteCode }),
         });
         assert.strictEqual(res.status, 200);
         const data = await res.json();
@@ -73,7 +84,7 @@ test.describe('Auth Routes', () => {
         const res = await fetch(`${baseUrl}/auth/signup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: testEmail, password: 'pass2', orgId, inviteCode: org.inviteCode }),
+            body: JSON.stringify({ email: testEmail, password: 'password2', orgId, inviteCode: org.inviteCode }),
         });
         assert.strictEqual(res.status, 400);
         const data = await res.json();
@@ -96,7 +107,7 @@ test.describe('Auth Routes', () => {
         const res = await fetch(`${baseUrl}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: testEmail, password: 'pass' }),
+            body: JSON.stringify({ email: testEmail, password: 'password' }),
         });
         assert.strictEqual(res.status, 400);
     });
@@ -114,7 +125,7 @@ test.describe('Auth Routes', () => {
         const res = await fetch(`${baseUrl}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: testEmail, password: 'pass', orgId }),
+            body: JSON.stringify({ email: testEmail, password: 'password', orgId }),
         });
         assert.strictEqual(res.status, 200);
         const data = await res.json();
@@ -140,7 +151,7 @@ test.describe('Auth Routes', () => {
             const res = await fetch(`${baseUrl}/auth/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: 'err@byepo.com', password: 'pass', orgId, inviteCode }),
+                body: JSON.stringify({ email: 'err@byepo.com', password: 'password', orgId, inviteCode }),
             });
             assert.strictEqual(res.status, 500);
         } finally {
@@ -155,7 +166,7 @@ test.describe('Auth Routes', () => {
             const res = await fetch(`${baseUrl}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: testEmail, password: 'pass', orgId }),
+                body: JSON.stringify({ email: testEmail, password: 'password', orgId }),
             });
             assert.strictEqual(res.status, 500);
         } finally {

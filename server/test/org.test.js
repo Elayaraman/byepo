@@ -429,7 +429,7 @@ test.describe('Organization Routes', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: `admin_${Date.now()}@test.com`,
-        password: 'pass',
+        password: 'password',
         orgId: org.id,
         inviteCode: org.inviteCode,
       }),
