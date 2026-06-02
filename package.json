@@ -7,7 +7,12 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start:server": "npm run --prefix server dev",
+    "start:admin": "npm run --prefix byepo-admin dev",
+    "start:org": "npm run --prefix byepo-org dev",
+    "start:check": "npm run --prefix byepo-check dev",
+    "start": "concurrently -n \"server,admin,org,check\" -c \"magenta,cyan,blue,yellow\" \"npm run start:server\" \"npm run start:admin\" \"npm run start:org\" \"npm run start:check\"",
+    "test": "npm run --prefix server test"
   },
   "types": "module",
   "repository": {
