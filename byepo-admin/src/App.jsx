@@ -19,7 +19,7 @@ function App() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:3000/_api/auth/login', {
+      const res = await fetch('/_api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -51,7 +51,7 @@ function App() {
   useEffect(() => {
     if (!token) return;
 
-    fetch('http://localhost:3000/_api/org', {
+    fetch('/_api/org', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -77,7 +77,7 @@ function App() {
 
     setCreateLoading(true);
     try {
-      const res = await fetch('http://localhost:3000/_api/org', {
+      const res = await fetch('/_api/org', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ function App() {
   async function handleDelete(orgId) {
     if (window.confirm("Are you sure you want to delete this organization?")) {
       try {
-        const res = await fetch(`http://localhost:3000/_api/org/${orgId}`, {
+        const res = await fetch(`/_api/org/${orgId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -121,7 +121,7 @@ function App() {
   async function handleRotate(orgId) {
     if (window.confirm("Are you sure you want to rotate the invite code? The old code will no longer work.")) {
       try {
-        const res = await fetch(`http://localhost:3000/_api/org/${orgId}/rotate-code`, {
+        const res = await fetch(`/_api/org/${orgId}/rotate-code`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });

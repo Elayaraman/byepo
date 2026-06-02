@@ -15,7 +15,7 @@ export default function App() {
         }
 
         setStatus('loading');
-        fetch(`http://localhost:3000/_api/org/public/${orgName}`)
+        fetch(`/_api/org/public/${orgName}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -40,7 +40,7 @@ export default function App() {
         e.preventDefault();
         setCheckResult(null);
         try {
-            const res = await fetch(`http://localhost:3000/_api/flag/check?org_name=${orgName}&name=${flagKey}`);
+            const res = await fetch(`/_api/flag/check?org_name=${orgName}&name=${flagKey}`);
             const data = await res.json();
             if (data.success) {
                 setCheckResult(data.enabled ? 'Enabled' : 'Disabled');

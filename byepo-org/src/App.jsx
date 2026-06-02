@@ -27,7 +27,7 @@ export default function App() {
     }
 
     setStatus('loading');
-    fetch(`http://localhost:3000/_api/org/public/${orgName}`)
+    fetch(`/_api/org/public/${orgName}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -60,7 +60,7 @@ export default function App() {
         ? { email, password, orgId }
         : { email, password, orgId, inviteCode };
 
-      const res = await fetch(`http://localhost:3000/_api/auth/${endpoint}`, {
+      const res = await fetch(`/_api/auth/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -104,7 +104,7 @@ export default function App() {
       return;
     }
 
-    fetch('http://localhost:3000/_api/flag', {
+    fetch('/_api/flag', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -142,7 +142,7 @@ export default function App() {
     }
 
     try {
-      const res = await fetch('http://localhost:3000/_api/flag', {
+      const res = await fetch('/_api/flag', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ export default function App() {
   const handleToggleFlag = async (flagId, currentEnabled) => {
     setFlagsError('');
     try {
-      const res = await fetch(`http://localhost:3000/_api/flag/${flagId}`, {
+      const res = await fetch(`/_api/flag/${flagId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -196,7 +196,7 @@ export default function App() {
     if (!window.confirm("Are you sure you want to delete this feature flag?")) return;
     setFlagsError('');
     try {
-      const res = await fetch(`http://localhost:3000/_api/flag/${flagId}`, {
+      const res = await fetch(`/_api/flag/${flagId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
