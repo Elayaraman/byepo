@@ -1,22 +1,5 @@
 import { useState, useEffect } from 'react';
-import { isValidFlagName } from '../../shared/validators.js';
-
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-  return null;
-}
-
-function setCookie(name, value, days = 7) {
-  const date = new Date();
-  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-  document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
-}
-
-function deleteCookie(name) {
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
-}
+import { isValidFlagName, FLAG_NAME_PATTERN, FLAG_NAME_PATTERN_TITLE, getCookie, setCookie, deleteCookie } from '../../shared/validators.js';
 
 export default function App() {
   const [orgName, setOrgName] = useState(window.location.pathname.split('/')[1] || '');
@@ -306,8 +289,8 @@ export default function App() {
                   value={newFlagName}
                   onChange={(e) => setNewFlagName(e.target.value)}
                   required
-                  pattern="^[a-z0-9_-]+$"
-                  title="Feature flag name must contain only lowercase letters, numbers, underscores, or hyphens"
+                  pattern={FLAG_NAME_PATTERN}
+                  title={FLAG_NAME_PATTERN_TITLE}
                 />
                 <button
                   type="submit"
