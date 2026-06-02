@@ -1,5 +1,23 @@
 import { useState } from 'react';
 
+const getApiBase = () => {
+  try {
+    if (import.meta.env && import.meta.env.VITE_API_BASE_URL) {
+      return import.meta.env.VITE_API_BASE_URL;
+    }
+  } catch (e) {}
+  
+  if (typeof window !== 'undefined') {
+    const hn = window.location.hostname;
+    if (hn === 'localhost' || hn === '127.0.0.1' || hn.startsWith('192.168.')) {
+      return '';
+    }
+  }
+  return 'https://byepo.onrender.com';
+};
+
+const API_BASE = getApiBase();
+
 /**
  * Common API request helper.
  * Handles Authorization headers, parsing response as JSON, and redirects on 401.
@@ -12,7 +30,8 @@ export async function apiRequest(url, options = {}) {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
-  const res = await fetch(url, {
+  const targetUrl = url.startsWith('http') ? url : `${API_BASE}${url}`;
+  const res = await fetch(targetUrl, {
     ...options,
     headers,
   });
