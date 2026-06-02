@@ -28,7 +28,6 @@ export default function FlagChecker({ orgName }) {
   );
 
   const handleCheck = async (formValues) => {
-    setResult(null);
     try {
       const data = await apiRequest(`/_api/flag/check?org_name=${orgName}&name=${formValues.flagKey}`);
       setResult(data.enabled ? 'Enabled' : 'Disabled');
@@ -53,10 +52,7 @@ export default function FlagChecker({ orgName }) {
           type="text"
           placeholder="e.g. new-checkout-flow"
           value={values.flagKey}
-          onChange={(e) => {
-            handleChange(e);
-            setResult(null);
-          }}
+          onChange={handleChange}
           error={errors.flagKey}
           required
         />
@@ -66,10 +62,7 @@ export default function FlagChecker({ orgName }) {
             type="checkbox"
             id="agreeTerms"
             checked={agreed}
-            onChange={(e) => {
-              setAgreed(e.target.checked);
-              setResult(null);
-            }}
+            onChange={(e) => setAgreed(e.target.checked)}
             className="h-4 w-4 mt-0.5 rounded-sm border-gray-300 cursor-pointer"
             required
           />
