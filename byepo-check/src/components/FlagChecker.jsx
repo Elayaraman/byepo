@@ -10,7 +10,7 @@ import { isValidFlagName, FLAG_NAME_PATTERN_TITLE } from '../../../shared/valida
  */
 export default function FlagChecker({ orgName }) {
   const [result, setResult] = useState(null);
-  const [usePreset, setUsePreset] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   const validate = (values) => {
     const errors = {};
@@ -22,7 +22,7 @@ export default function FlagChecker({ orgName }) {
     return errors;
   };
 
-  const { values, errors, setErrors, loading, handleChange, handleCustomChange, handleSubmit } = useForm(
+  const { values, errors, setErrors, loading, handleChange, handleSubmit } = useForm(
     { flagKey: '' },
     validate
   );
@@ -55,27 +55,20 @@ export default function FlagChecker({ orgName }) {
           value={values.flagKey}
           onChange={handleChange}
           error={errors.flagKey}
-          disabled={usePreset}
           required
         />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-start gap-2">
           <input
             type="checkbox"
-            id="usePreset"
-            checked={usePreset}
-            onChange={(e) => {
-              setUsePreset(e.target.checked);
-              if (e.target.checked) {
-                handleCustomChange('flagKey', 'new-ui');
-              } else {
-                handleCustomChange('flagKey', '');
-              }
-            }}
-            className="h-4 w-4 rounded-sm border-gray-300 cursor-pointer"
+            id="agreeTerms"
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+            className="h-4 w-4 mt-0.5 rounded-sm border-gray-300 cursor-pointer"
+            required
           />
-          <label htmlFor="usePreset" className="text-sm font-bold text-gray-700 cursor-pointer select-none">
-            Use preset key ('new-ui')
+          <label htmlFor="agreeTerms" className="text-xs text-gray-600 cursor-pointer select-none">
+            I agree to the terms and confirm I am authorized to query this organization's flags.
           </label>
         </div>
 
@@ -89,12 +82,6 @@ export default function FlagChecker({ orgName }) {
 
         {result !== null && (
           <div className="mt-4 p-4 border border-gray-300 font-bold bg-gray-50 flex items-center gap-3 rounded-sm shadow-sm">
-            <input
-              type="checkbox"
-              checked={result === 'Enabled'}
-              readOnly
-              className="h-5 w-5 accent-blue-600 rounded-sm cursor-not-allowed"
-            />
             <span className={result === 'Enabled' ? 'text-green-700' : 'text-red-700'}>
               {result === 'Enabled' ? 'Feature is enabled' : 'Feature is disabled'}
             </span>
