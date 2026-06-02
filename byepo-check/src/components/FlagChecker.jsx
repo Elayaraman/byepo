@@ -2,7 +2,6 @@ import { useState } from 'react';
 import FormField from '../../../shared/components/FormField.jsx';
 import ErrorBanner from '../../../shared/components/ErrorBanner.jsx';
 import { useForm, apiRequest } from '../../../shared/fe_utils.js';
-import { isValidFlagName, FLAG_NAME_PATTERN_TITLE } from '../../../shared/validators.js';
 
 /**
  * Flag status checker form + result display.
@@ -22,8 +21,6 @@ export default function FlagChecker({ orgName }) {
 
     if (!flag) {
       errors.flagKey = 'Feature key is required';
-    } else if (!isValidFlagName(flag)) {
-      errors.flagKey = FLAG_NAME_PATTERN_TITLE;
     }
     return errors;
   };
