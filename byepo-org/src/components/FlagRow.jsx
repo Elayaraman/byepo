@@ -16,6 +16,10 @@ export default function FlagRow({ flag, onToggle, onDelete, onRename }) {
       setError('Name is required');
       return;
     }
+    if (trimmed.length < 3) {
+      setError('Feature flag name must be at least 3 characters');
+      return;
+    }
     if (!isValidFlagName(trimmed)) {
       setError(FLAG_NAME_PATTERN_TITLE);
       return;

@@ -19,6 +19,8 @@ export default function FlagDashboard({ token, onLogout }) {
     const flagKey = values.newFlagName.trim();
     if (!flagKey) {
       errors.newFlagName = 'Flag name is required';
+    } else if (flagKey.length < 3) {
+      errors.newFlagName = 'Feature flag name must be at least 3 characters';
     } else if (!isValidFlagName(flagKey)) {
       errors.newFlagName = FLAG_NAME_PATTERN_TITLE;
     }

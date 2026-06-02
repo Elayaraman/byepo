@@ -117,6 +117,20 @@ test.describe('Flag Routes', () => {
     assert.strictEqual(res.status, 400);
   });
 
+  test('POST / - returns 400 if flag name is less than 3 characters', async () => {
+    const res = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${orgAdminToken1}`
+      },
+      body: JSON.stringify({ name: 'ab' }),
+    });
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.error, 'Feature flag name must be at least 3 characters');
+  });
+
   test('POST / - returns 400 if flag name contains uppercase letters or spaces', async () => {
     const res1 = await fetch(baseUrl, {
       method: 'POST',
@@ -137,18 +151,6 @@ test.describe('Flag Routes', () => {
       body: JSON.stringify({ name: 'flag with spaces' }),
     });
     assert.strictEqual(res2.status, 400);
-
-    const res3 = await fetch(baseUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${orgAdminToken1}`
-      },
-      body: JSON.stringify({ name: 'ab' }),
-    });
-    assert.strictEqual(res3.status, 400);
-    const data3 = await res3.json();
-    assert.ok(data3.error.includes('at least 3 characters'));
   });
 
   test('GET /:id - returns flag by ID and handles 404', async () => {
