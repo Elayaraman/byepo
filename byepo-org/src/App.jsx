@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getCookie, setCookie, deleteCookie } from '../../shared/fe_utils.js';
+import { getCookie, setCookie, deleteCookie, apiRequest } from '../../shared/fe_utils.js';
 import OrgSelector from '../../shared/components/OrgSelector.jsx';
 import InvalidOrg from '../../shared/components/InvalidOrg.jsx';
 import LoadingSpinner from '../../shared/components/LoadingSpinner.jsx';
@@ -19,8 +19,7 @@ export default function App() {
       return;
     }
     setStatus('loading');
-    fetch(`/_api/org/public/${orgName}`)
-      .then((res) => res.json())
+    apiRequest(`/_api/org/public/${orgName}`)
       .then((data) => {
         if (data.success) {
           setOrgId(data.data.id);
