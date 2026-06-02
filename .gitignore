@@ -1,7 +1,5 @@
 node_modules/
-database.db
+*.db
+server/*.db
 package-lock.json
-package-lock.json
-server/database.db
 server/server.log
-server/package-lock.json
