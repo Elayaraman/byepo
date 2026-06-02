@@ -101,7 +101,7 @@ export default function Dashboard({ token, onLogout }) {
         </button>
       </header>
 
-      <div className="p-8 font-sans max-w-[600px] w-full flex flex-1 flex-col border border-gray-200 bg-white shadow-sm mt-6 mb-6 rounded-sm">
+      <div className="p-8 font-sans max-w-[700px] w-full flex flex-1 flex-col border border-gray-200 bg-white shadow-sm mt-6 mb-6 rounded-sm">
         <ErrorBanner message={errors.global} />
 
         <form onSubmit={(e) => handleSubmit(e, handleCreateOrg)} className="mb-6 flex gap-2 items-end">
